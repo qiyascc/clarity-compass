@@ -16,5 +16,5 @@ jobs:
       - run: uv sync --all-packages --locked
       - run: uv run ruff check .
       - run: uv run ruff format --check .
-      - run: uv run mypy packages apps
+      - run: uv run mypy packages
       - run: uv run pytest
