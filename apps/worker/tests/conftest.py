@@ -44,8 +44,8 @@ async def browser() -> AsyncIterator[Browser]:
 
 @pytest.fixture(scope="session", autouse=True)
 def probe_bundle() -> None:
-    bundle = FIXTURE_ROOT.parents[1] / "packages" / "probe" / "dist" / "probe.js"
-    if not bundle.is_file():
+    dist = FIXTURE_ROOT.parents[1] / "packages" / "probe" / "dist"
+    if not all((dist / f"{name}.js").is_file() for name in ("probe", "snapshot")):
         subprocess.run(
             ["pnpm", "--filter", "@clarity-compass/probe", "build"],
             cwd=FIXTURE_ROOT.parents[1],
