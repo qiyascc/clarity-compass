@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from clarity_api.queue import RunQueue
-from clarity_api.routes import auth, health
+from clarity_api.routes import auth, health, sites
 from clarity_api.security import LoginThrottle, SecretBox, SessionSigner
 from clarity_api.settings import Settings
 from clarity_persistence.database import create_engine, session_factory
@@ -37,6 +37,6 @@ def create_app(settings: Settings, queue: RunQueue) -> FastAPI:
             allow_headers=["*"],
         )
 
-    for module in (health, auth):
+    for module in (health, auth, sites):
         app.include_router(module.router, prefix="/api")
     return app
