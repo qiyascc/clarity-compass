@@ -6,7 +6,7 @@ from typing import Any
 from pydantic import BaseModel, Field, SecretStr
 
 from clarity_core.domain.profile import AnalysisProfile
-from clarity_persistence.models import Run, RunStatus, Site
+from clarity_persistence.models import PageRecord, Run, RunStatus, Site
 
 
 class SiteIn(BaseModel):
@@ -74,3 +74,16 @@ class RunOut(BaseModel):
     @classmethod
     def of(cls, run: Run) -> "RunOut":
         return cls.model_validate(run, from_attributes=True)
+
+
+class PageOut(BaseModel):
+    id: uuid.UUID
+    url: str
+    viewport: str
+    status_code: int | None
+    title: str
+    capture: dict[str, Any]
+
+    @classmethod
+    def of(cls, page: PageRecord) -> "PageOut":
+        return cls.model_validate(page, from_attributes=True)
