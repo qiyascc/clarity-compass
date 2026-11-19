@@ -1,0 +1,13 @@
+[
+  {"id": "low-contrast-subtitle", "page": "/", "selector": ".hero p.faint", "category": "accessibility"},
+  {"id": "broken-image", "page": "/", "selector": "img[src='/img/missing.jpg']", "category": "functional"},
+  {"id": "dead-link-404", "page": "/", "selector": "a[href='/listings/404.html']", "category": "functional"},
+  {"id": "search-does-nothing", "page": "/", "selector": "#search-btn", "category": "functional"},
+  {"id": "anchor-to-missing-target", "page": "/", "selector": "a[href='#nowhere']", "category": "functional"},
+  {"id": "tiny-tap-target", "page": "/", "selector": ".btn.tiny", "category": "accessibility"},
+  {"id": "back-to-top-throws", "page": "/", "selector": "#to-top", "category": "functional"},
+  {"id": "partial-translation", "page": "/", "selector": "#lang", "category": "functional"},
+  {"id": "console-error-on-load", "page": "/", "selector": null, "category": "functional"},
+  {"id": "contact-cta-far-from-price", "page": "/listings/1.html", "selector": "a.btn", "category": "ux"},
+  {"id": "missing-alt-text", "page": "/listings/1.html", "selector": "img[alt='']", "category": "accessibility"}
+]
