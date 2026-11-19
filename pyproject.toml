@@ -7,7 +7,7 @@ requires-python = ">=3.12"
 package = false
 
 [tool.uv.workspace]
-members = ["packages/core", "apps/worker"]
+members = ["packages/core", "packages/persistence", "apps/worker"]
 
 [dependency-groups]
 dev = [
@@ -26,7 +26,7 @@ target-version = "py312"
 select = ["E", "F", "W", "I", "B", "UP", "SIM", "RUF", "ASYNC", "PT", "N"]
 
 [tool.ruff.lint.isort]
-known-first-party = ["clarity_core", "clarity_worker", "clarity_api"]
+known-first-party = ["clarity_core", "clarity_persistence", "clarity_worker", "clarity_api"]
 
 [tool.mypy]
 python_version = "3.12"
