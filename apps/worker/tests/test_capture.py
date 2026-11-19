@@ -42,6 +42,7 @@ async def test_scroll_capture_produces_viewport_sections(
     for section in result.sections:
         assert (await store.get(section.screenshot)).startswith(b"\x89PNG")
     assert result.full_page is not None
+    assert f"{bugfarm}/about.html" in result.links
 
 
 async def test_lazy_content_is_loaded_by_scrolling(
