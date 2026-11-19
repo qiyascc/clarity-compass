@@ -8,7 +8,7 @@ lint:
 	uv run ruff format --check .
 
 typecheck:
-	uv run mypy packages
+	uv run mypy packages apps
 
 test:
 	uv run pytest
