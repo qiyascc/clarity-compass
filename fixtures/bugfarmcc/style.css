@@ -1,0 +1,15 @@
+* { box-sizing: border-box; }
+body { margin: 0; font-family: system-ui, sans-serif; color: #222; background: #fafafa; }
+header { position: sticky; top: 0; z-index: 10; height: 64px; display: flex; align-items: center;
+  justify-content: space-between; padding: 0 24px; background: #fff; border-bottom: 1px solid #ddd; }
+header nav a { margin-left: 16px; color: #222; text-decoration: none; }
+section { min-height: 720px; padding: 48px 24px; }
+.hero { background: #f2f2f2; }
+.hero p.faint { color: #c8c8c8; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+.card { background: #fff; border: 1px solid #e3e3e3; padding: 12px; }
+.card img { width: 100%; height: 180px; object-fit: cover; background: #ddd; }
+.btn { display: inline-block; padding: 12px 20px; background: #1e6fd9; color: #fff; border: 0; cursor: pointer; }
+.btn.tiny { padding: 2px 4px; font-size: 10px; }
+footer { padding: 32px 24px; background: #222; color: #aaa; }
+#lazy-more { min-height: 200px; }
