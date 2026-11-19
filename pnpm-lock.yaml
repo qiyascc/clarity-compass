@@ -16,6 +16,10 @@ importers:
         version: 7.0.2
 
   packages/probe:
+    dependencies:
+      rrweb-snapshot:
+        specifier: 2.2.2
+        version: 2.2.2
     devDependencies:
       esbuild:
         specifier: ^0.28.2
@@ -683,6 +687,9 @@ packages:
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
+  rrweb-snapshot@2.2.2:
+    resolution: {integrity: sha512-/0w4Xzd/Tw5a80dmEmv8/YkFitJYoMOnbtmt0jCAEdZ1w0nDSw5hvf59E/oDLy+z+x+vCcT0ibI+IYWeuCHegQ==}
+
   source-map-js@1.2.4:
     resolution: {integrity: sha512-J7ZjMvHd9O1fcT/5V09QWaaSl2BbWx3F6O08spde82Namf9UB0GxRVIPiNbVsdKkoizHiSpTodo3vp2bAy91MA==}
     engines: {node: '>=6.0.0'}
@@ -1281,6 +1288,10 @@ snapshots:
       '@rolldown/binding-wasm32-wasi': 1.2.19
       '@rolldown/binding-win32-arm64-msvc': 1.2.19
       '@rolldown/binding-win32-x64-msvc': 1.2.19
+
+  rrweb-snapshot@2.2.2:
+    dependencies:
+      postcss: 8.5.33
 
   source-map-js@1.2.4: {}
 
