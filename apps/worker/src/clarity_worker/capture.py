@@ -7,7 +7,7 @@ from playwright.async_api import Error as PlaywrightError
 
 from clarity_core.domain.capture import ConsoleEntry, PageCapture, RequestIssue, Section
 from clarity_worker.browser import GuardedContext
-from clarity_worker.probe import run_probe
+from clarity_worker.probe import run_probe, take_snapshot
 from clarity_worker.store import ArtifactStore
 
 MAX_FULL_PAGE_HEIGHT = 16_000
@@ -94,6 +94,7 @@ class PageCapturer:
         slug = f"{self.prefix}/{guarded.viewport.value}"
         probe = await run_probe(page)
         probe_key = await self.store.put(f"{slug}/probe.json", probe.model_dump_json().encode())
+        snapshot_key = await self.store.put(f"{slug}/snapshot.json", await take_snapshot(page))
         sections = await self._sections(page, slug, page_height)
         full_page = await self._full_page(page, slug, page_height)
         links = await _links(page)
@@ -113,6 +114,7 @@ class PageCapturer:
             full_page=full_page,
             links=links,
             probe=probe_key,
+            snapshot=snapshot_key,
             console=recorder.console,
             page_errors=recorder.page_errors,
             request_issues=recorder.request_issues,

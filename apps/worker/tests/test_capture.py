@@ -47,6 +47,8 @@ async def test_scroll_capture_produces_viewport_sections(
     assert result.probe is not None
     probe = PageProbe.model_validate_json(await store.get(result.probe))
     assert probe.document_height == result.page_height
+    assert result.snapshot is not None
+    assert b"Find your next home" in await store.get(result.snapshot)
 
 
 async def test_lazy_content_is_loaded_by_scrolling(
