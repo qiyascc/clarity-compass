@@ -18,9 +18,7 @@ async def test_read_requests_to_public_hosts_pass(policy: RequestPolicy) -> None
 
 
 @pytest.mark.parametrize("method", ["POST", "PUT", "PATCH", "DELETE"])
-async def test_mutating_requests_are_blocked_by_default(
-    policy: RequestPolicy, method: str
-) -> None:
+async def test_mutating_requests_are_blocked_by_default(policy: RequestPolicy, method: str) -> None:
     assert await policy.evaluate(method, "https://theqiyas.cc/api") is Verdict.BLOCK_MUTATION
 
 
