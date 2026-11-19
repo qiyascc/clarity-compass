@@ -93,17 +93,22 @@ class PageCapturer:
         slug = f"{self.prefix}/{guarded.viewport.value}"
         sections = await self._sections(page, slug, page_height)
         full_page = await self._full_page(page, slug, page_height)
+        links = await _links(page)
+        title = await page.title()
+        final_url = page.url
+        await page.close()
 
         return PageCapture(
             requested_url=url,
-            final_url=page.url,
+            final_url=final_url,
             viewport=guarded.viewport,
             status=response.status if response else None,
-            title=await page.title(),
+            title=title,
             page_height=page_height,
             initial_height=initial_height,
             sections=sections,
             full_page=full_page,
+            links=links,
             console=recorder.console,
             page_errors=recorder.page_errors,
             request_issues=recorder.request_issues,
@@ -166,6 +171,15 @@ def _viewport_height(page: Page) -> int:
     if size is None:
         raise CaptureError("page has no viewport")
     return size["height"]
+
+
+async def _links(page: Page) -> list[str]:
+    hrefs: list[str] = await page.evaluate(
+        """() => [...new Set([...document.querySelectorAll('a[href]')]
+            .map((a) => a.href)
+            .filter((href) => href.startsWith('http')))]"""
+    )
+    return hrefs
 
 
 async def _document_height(page: Page) -> int:

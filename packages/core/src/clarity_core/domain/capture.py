@@ -36,6 +36,7 @@ class PageCapture(BaseModel):
     initial_height: int
     sections: list[Section]
     full_page: str | None = None
+    links: list[str] = Field(default_factory=list)
     console: list[ConsoleEntry] = Field(default_factory=list)
     page_errors: list[str] = Field(default_factory=list)
     request_issues: list[RequestIssue] = Field(default_factory=list)
