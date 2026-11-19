@@ -4,6 +4,7 @@ import pytest
 from playwright.async_api import Browser
 
 from clarity_core.domain.capture import PageCapture
+from clarity_core.domain.probe import PageProbe
 from clarity_core.domain.viewport import Viewport
 from clarity_core.net.guard import AddressGuard
 from clarity_worker.browser import open_context
@@ -43,6 +44,9 @@ async def test_scroll_capture_produces_viewport_sections(
         assert (await store.get(section.screenshot)).startswith(b"\x89PNG")
     assert result.full_page is not None
     assert f"{bugfarm}/about.html" in result.links
+    assert result.probe is not None
+    probe = PageProbe.model_validate_json(await store.get(result.probe))
+    assert probe.document_height == result.page_height
 
 
 async def test_lazy_content_is_loaded_by_scrolling(
