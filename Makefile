@@ -13,7 +13,7 @@ lint:
 	pnpm exec biome check .
 
 typecheck:
-	uv run mypy packages apps
+	for project in packages/core packages/persistence apps/worker; do uv run mypy $$project || exit 1; done
 	pnpm -r typecheck
 
 test: build
