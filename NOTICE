@@ -1,0 +1,21 @@
+Clarity Compass
+Copyright 2026 Qiyas CC (https://github.com/qiyascc)
+
+This product is licensed under the Apache License, Version 2.0.
+Any redistribution or derivative work, commercial or not, must retain this
+NOTICE file and give visible credit to "Clarity Compass by Qiyas CC" with a
+link to https://github.com/qiyascc/clarity-compass.
+
+-------------------------------------------------------------------------------
+Third-party models and datasets
+
+Foveacast saliency models (MIT), Ken Hawkins
+  https://github.com/khawkins98/Foveacast
+
+MediaAttention-Ads (Apache-2.0), fine-tune of UNISAL (Apache-2.0)
+  https://huggingface.co/pranikz/MediaAttention-Ads
+
+Both models are fine-tuned on the UEyes dataset (CC BY 4.0):
+  Jiang, Y., Leiva, L. A., Rezazadegan Tavakoli, H., Houssel, P. R. B.,
+  Kylmälä, J., & Oulasvirta, A. (2023). UEyes: Understanding Visual Saliency
+  across User Interface Types. CHI '23. https://doi.org/10.1145/3544548.3581096
