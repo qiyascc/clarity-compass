@@ -1,4 +1,5 @@
 import ipaddress
+import subprocess
 import threading
 from collections.abc import AsyncIterator, Iterator
 from functools import partial
@@ -39,3 +40,15 @@ async def browser() -> AsyncIterator[Browser]:
         instance = await playwright.chromium.launch()
         yield instance
         await instance.close()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def probe_bundle() -> None:
+    bundle = FIXTURE_ROOT.parents[1] / "packages" / "probe" / "dist" / "probe.js"
+    if not bundle.is_file():
+        subprocess.run(
+            ["pnpm", "--filter", "@clarity-compass/probe", "build"],
+            cwd=FIXTURE_ROOT.parents[1],
+            check=True,
+            capture_output=True,
+        )
