@@ -321,6 +321,28 @@ export interface components {
             role?: string | null;
             box?: components["schemas"]["Box"] | null;
         };
+        /** ElementPrediction */
+        ElementPrediction: {
+            /** Index */
+            index: number;
+            /** Selector */
+            selector: string;
+            /** Tag */
+            tag: string;
+            /** Name */
+            name: string;
+            box: components["schemas"]["Box"];
+            /** Interactive */
+            interactive: boolean;
+            /** Section */
+            section: number;
+            /** Attention */
+            attention: number;
+            /** Attention Density */
+            attention_density: number;
+            /** Click */
+            click?: number | null;
+        };
         /** Evidence */
         Evidence: {
             kind: components["schemas"]["EvidenceKind"];
@@ -423,6 +445,22 @@ export interface components {
             capture: {
                 [key: string]: unknown;
             };
+            predictions: components["schemas"]["PagePrediction"] | null;
+        };
+        /** PagePrediction */
+        PagePrediction: {
+            /** Sections */
+            sections: components["schemas"]["SectionAttention"][];
+            /** Heatmap */
+            heatmap: string;
+            /** Heatmap Scale */
+            heatmap_scale: number;
+            /** Agreement */
+            agreement: number;
+            /** Elements */
+            elements?: components["schemas"]["ElementPrediction"][];
+            /** Models */
+            models?: string[];
         };
         /** RunOut */
         RunOut: {
@@ -465,6 +503,23 @@ export interface components {
          * @enum {string}
          */
         ScopeMode: "site" | "pages" | "single";
+        /** SectionAttention */
+        SectionAttention: {
+            /** Index */
+            index: number;
+            /** Scroll Y */
+            scroll_y: number;
+            /** Height */
+            height: number;
+            /** Combined */
+            combined: string;
+            /** Windows */
+            windows: {
+                [key: string]: string;
+            };
+            /** Agreement */
+            agreement: number;
+        };
         /**
          * Severity
          * @enum {string}
