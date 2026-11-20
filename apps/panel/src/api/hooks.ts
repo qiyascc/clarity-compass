@@ -1,5 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { api, type Finding, type Page, type Run, type Site, type SiteInput, send } from "./client";
+import {
+  ApiError,
+  api,
+  type Finding,
+  type Page,
+  type Report,
+  type Run,
+  type Site,
+  type SiteInput,
+  send,
+} from "./client";
 
 export const keys = {
   me: ["me"] as const,
@@ -9,6 +19,7 @@ export const keys = {
   run: (id: string) => ["runs", id] as const,
   pages: (runId: string) => ["runs", runId, "pages"] as const,
   findings: (runId: string) => ["runs", runId, "findings"] as const,
+  report: (runId: string) => ["runs", runId, "report"] as const,
 };
 
 const ACTIVE = new Set(["queued", "running"]);
@@ -139,3 +150,10 @@ export const useFindings = (runId: string) =>
   });
 
 export { isActive };
+
+export const useReport = (runId: string) =>
+  useQuery({
+    queryKey: keys.report(runId),
+    queryFn: () => api<Report>(`/runs/${runId}/report`),
+    retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 2,
+  });

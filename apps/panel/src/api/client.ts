@@ -7,6 +7,7 @@ export type Profile = Schemas["AnalysisProfile"];
 export type Run = Schemas["RunOut"];
 export type Page = Schemas["PageOut"];
 export type Finding = Schemas["FindingOut"];
+export type Report = Schemas["Report"];
 
 export class ApiError extends Error {
   constructor(
