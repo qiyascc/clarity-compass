@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import type { Page } from "@/api/client";
 import { isActive, useCancelRun, useFindings, usePages, useRun } from "@/api/hooks";
+import { HeatImage } from "@/components/HeatImage";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button, Card, ErrorText } from "@/components/ui";
 import { formatDate, formatDuration } from "@/format";
@@ -107,9 +108,19 @@ export function RunDetail() {
 
 function PageCard({ url, captures }: { url: string; captures: Page[] }) {
   const [selected, setSelected] = useState(0);
+  const [showHeat, setShowHeat] = useState(true);
   const page = captures[selected] ?? captures[0];
   if (!page) return null;
   const capture = page.capture as unknown as Capture;
+  const prediction = page.predictions;
+  const attentionKey = (index: number) => {
+    const key = prediction?.sections.find((section) => section.index === index)?.combined;
+    return key ? artifact(key) : undefined;
+  };
+  const topClicks = [...(prediction?.elements ?? [])]
+    .filter((element) => element.click != null)
+    .sort((a, b) => (b.click ?? 0) - (a.click ?? 0))
+    .slice(0, 5);
   const errors =
     capture.console.filter((entry) => entry.level === "error").length + capture.page_errors.length;
 
@@ -117,7 +128,18 @@ function PageCard({ url, captures }: { url: string; captures: Page[] }) {
     <Card
       title={page.title || url}
       actions={
-        <div className="flex gap-1">
+        <div className="flex items-center gap-1">
+          {prediction && (
+            <label className="mr-3 flex items-center gap-1.5 text-xs text-ink-soft">
+              <input
+                type="checkbox"
+                className="accent-accent"
+                checked={showHeat}
+                onChange={(event) => setShowHeat(event.target.checked)}
+              />
+              Attention
+            </label>
+          )}
           {captures.map((item, index) => (
             <button
               key={item.id}
@@ -144,6 +166,7 @@ function PageCard({ url, captures }: { url: string; captures: Page[] }) {
           warn={capture.request_issues.length > 0}
         />
         <Stat label="Blocked" value={capture.blocked_requests.length} />
+        {prediction && <Stat label="Model agreement" value={prediction.agreement.toFixed(2)} />}
       </dl>
       <div className="flex gap-3 overflow-x-auto pb-2">
         {capture.sections.map((section) => (
@@ -154,15 +177,35 @@ function PageCard({ url, captures }: { url: string; captures: Page[] }) {
             rel="noreferrer"
             className="shrink-0"
           >
-            <img
-              src={artifact(section.screenshot)}
-              alt={`Section ${section.index + 1}`}
-              loading="lazy"
-              className={`rounded border border-line ${page.viewport === "desktop" ? "h-40" : "h-56"}`}
+            <HeatImage
+              screenshot={artifact(section.screenshot)}
+              attention={attentionKey(section.index)}
+              showHeat={showHeat}
+              className={page.viewport === "desktop" ? "h-40" : "h-56"}
             />
           </a>
         ))}
       </div>
+      {topClicks.length > 0 && (
+        <div className="mt-4">
+          <h3 className="mb-2 text-xs font-semibold tracking-wide text-ink-faint uppercase">
+            Predicted clicks
+          </h3>
+          <ol className="space-y-1 text-sm">
+            {topClicks.map((element) => (
+              <li key={element.index} className="flex items-center gap-3">
+                <span className="w-12 text-right font-mono text-xs">
+                  {Math.round((element.click ?? 0) * 100)}%
+                </span>
+                <span className="truncate">{element.name || element.selector}</span>
+                <span className="ml-auto shrink-0 text-xs text-ink-faint">
+                  attention {(element.attention * 100).toFixed(1)}%
+                </span>
+              </li>
+            ))}
+          </ol>
+        </div>
+      )}
     </Card>
   );
 }
