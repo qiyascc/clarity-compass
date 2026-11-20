@@ -13,7 +13,7 @@ lint:
 	pnpm exec biome check .
 
 typecheck:
-	for project in packages/core packages/persistence packages/saliency apps/api apps/worker; do uv run mypy $$project || exit 1; done
+	for project in packages/core packages/ai packages/persistence packages/saliency apps/api apps/worker; do uv run mypy $$project || exit 1; done
 	pnpm -r typecheck
 
 test: build
