@@ -85,3 +85,12 @@ def test_seeds_are_depth_zero() -> None:
         "https://shop.test/",
         "https://shop.test/pricing",
     ]
+
+
+def test_redirect_target_is_not_visited_twice() -> None:
+    frontier = Frontier("https://old.test/", max_pages=10, max_depth=2)
+    frontier.pop()
+    frontier.adopt_host("https://new.test/")
+    frontier.mark_visited("https://new.test/")
+    frontier.add_links("https://new.test/", ["/", "/about"])
+    assert drain(frontier) == ["https://new.test/about"]
