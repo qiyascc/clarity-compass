@@ -250,6 +250,7 @@ async def test_audit_stores_checks_and_design_review(
     assert run.progress["audited"] == 1
     sources = {finding.source for finding in findings}
     assert {"check:console-errors", "check:broken-image", "agent:ux-designer"} <= sources
+    assert {"functional:no-effect", "functional:click-error"} <= sources
     lead = next(page for page in pages if page.viewport == "desktop")
     assert lead.review is not None
     assert lead.review["understanding"]["kind"] == "about"

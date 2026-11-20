@@ -3,10 +3,12 @@ import uuid
 from collections.abc import Awaitable, Callable
 
 from playwright.async_api import Browser
+from playwright.async_api import Error as PlaywrightError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from clarity_ai.provider import ProviderError
 from clarity_core.domain.capture import PageCapture
+from clarity_core.domain.findings import Finding
 from clarity_core.domain.prediction import PagePrediction
 from clarity_core.domain.probe import PageProbe
 from clarity_core.domain.profile import AnalysisProfile
@@ -14,8 +16,11 @@ from clarity_core.domain.viewport import Viewport
 from clarity_core.net.guard import AddressGuard
 from clarity_persistence.models import PageRecord, Run, RunStatus
 from clarity_persistence.repositories import RunRepository
-from clarity_worker.checks import run_checks
+from clarity_worker.browser import open_context
+from clarity_worker.checks import drop_reported, run_checks
 from clarity_worker.explorer import SiteExplorer
+from clarity_worker.functional.auditor import FunctionalAuditor
+from clarity_worker.policy import RequestPolicy
 from clarity_worker.predict import PagePredictor
 from clarity_worker.review import CapturedView, PageReviewer
 from clarity_worker.store import ArtifactStore
@@ -44,6 +49,8 @@ class AnalysisRunner:
     ) -> None:
         self.sessions = sessions
         self.store = store
+        self.browser = browser
+        self.guard = guard
         self.explorer = SiteExplorer(browser, store, guard, scroll_pause_ms=scroll_pause_ms)
         self.predictor = predictor
         self.reviewer = reviewer
@@ -131,7 +138,8 @@ class AnalysisRunner:
         async with self.sessions() as db:
             runs = RunRepository(db)
             run = await self._running(runs, run_id)
-            language = str(run.profile.get("language", "en"))
+            profile = AnalysisProfile.model_validate(run.profile)
+            language = profile.language.value
             await runs.report(run, stage="audit", audited=0, findings=0)
             await db.commit()
             groups: dict[str, list[PageRecord]] = {}
@@ -148,6 +156,9 @@ class AnalysisRunner:
                 continue
             findings = run_checks(
                 [(view.capture, view.probe) for view in views], language, reported
+            )
+            findings += drop_reported(
+                await self._exercise(views, profile, f"{run_id}/actions/{done:03d}"), reported
             )
             review = None
             if self.reviewer:
@@ -180,6 +191,28 @@ class AnalysisRunner:
                 total += len(findings)
                 await runs.report(run, audited=done, findings=total, review_errors=review_errors)
                 await db.commit()
+
+    async def _exercise(
+        self, views: list[CapturedView], profile: AnalysisProfile, prefix: str
+    ) -> list[Finding]:
+        findings: list[Finding] = []
+        for view in views:
+            if (view.capture.status or 200) >= 400:
+                continue
+            auditor = FunctionalAuditor(
+                self.store,
+                self.guard,
+                language=profile.language.value,
+                max_actions=profile.limits.max_actions_per_page,
+                prefix=prefix,
+            )
+            policy = RequestPolicy(self.guard)
+            async with open_context(self.browser, view.capture.viewport, policy) as context:
+                try:
+                    findings += await auditor.audit(context, view.capture.final_url)
+                except PlaywrightError as exc:
+                    log.warning("interaction audit failed for %s: %s", view.capture.final_url, exc)
+        return findings
 
     async def _view(self, record: PageRecord) -> CapturedView | None:
         capture = PageCapture.model_validate(record.capture)
