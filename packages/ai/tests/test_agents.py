@@ -2,7 +2,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from clarity_ai.agents import DesignReviewAgent, UnderstandingAgent
+from clarity_ai.agents import DesignReviewAgent, RecommendationAgent, UnderstandingAgent
 from clarity_ai.context import ElementLine, PageContext, Shot
 from clarity_ai.provider import Generated, Image, Prompt, Text
 from clarity_ai.schemas import (
@@ -10,8 +10,10 @@ from clarity_ai.schemas import (
     NoteSeverity,
     PageKind,
     PageUnderstanding,
+    PriorityItem,
     ReviewNote,
     Scores,
+    SiteAssessment,
 )
 
 
@@ -105,3 +107,29 @@ async def test_review_prompt_carries_purpose_language_evidence_and_rules() -> No
 def test_review_schema_has_no_functional_category() -> None:
     schema = ReviewNote.model_json_schema()
     assert "functional" not in schema["properties"]["category"]["enum"]
+
+
+async def test_recommendations_drop_unknown_finding_numbers() -> None:
+    reply = SiteAssessment(
+        assessment="Solid but quiet.",
+        strengths=["Fast"],
+        priorities=[
+            PriorityItem(
+                title="Raise text contrast",
+                why="w",
+                action="a",
+                impact="high",
+                effort="small",
+                findings=[1, 2, 9],
+            )
+        ],
+    )
+    provider = ScriptedProvider(reply)
+    result = await RecommendationAgent(provider).run(
+        "https://theqiyas.cc/", "ru", ["/ (home): fine"], ["[high verified] a", "[low predicted] b"]
+    )
+    assert result.value.priorities[0].findings == [1, 2]
+    prompt = provider.prompts[0]
+    assert "Russian" in prompt.system
+    text = "\n".join(part.text for part in prompt.parts if isinstance(part, Text))
+    assert "2. [low predicted] b" in text
