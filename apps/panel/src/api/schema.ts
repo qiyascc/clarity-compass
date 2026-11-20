@@ -361,8 +361,8 @@ export interface components {
             /** Key */
             key: string;
         };
-        /** Finding */
-        Finding: {
+        /** FindingOut */
+        FindingOut: {
             /**
              * Id
              * Format: uuid
@@ -392,6 +392,8 @@ export interface components {
              * @default unknown
              */
             source: string;
+            /** Page Id */
+            page_id: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -446,6 +448,10 @@ export interface components {
                 [key: string]: unknown;
             };
             predictions: components["schemas"]["PagePrediction"] | null;
+            /** Review */
+            review: {
+                [key: string]: unknown;
+            } | null;
         };
         /** PagePrediction */
         PagePrediction: {
@@ -1133,7 +1139,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["Finding"][];
+                    "application/json": components["schemas"]["FindingOut"][];
                 };
             };
             /** @description Validation Error */
