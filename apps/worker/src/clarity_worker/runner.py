@@ -6,6 +6,7 @@ from playwright.async_api import Browser
 from playwright.async_api import Error as PlaywrightError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from clarity_ai.agents import RecommendationAgent
 from clarity_ai.provider import ProviderError
 from clarity_core.domain.capture import PageCapture
 from clarity_core.domain.findings import Finding
@@ -22,6 +23,7 @@ from clarity_worker.explorer import SiteExplorer
 from clarity_worker.functional.auditor import FunctionalAuditor
 from clarity_worker.policy import RequestPolicy
 from clarity_worker.predict import PagePredictor
+from clarity_worker.report import build_report
 from clarity_worker.review import CapturedView, PageReviewer
 from clarity_worker.store import ArtifactStore
 
@@ -45,6 +47,7 @@ class AnalysisRunner:
         *,
         predictor: PagePredictor | None = None,
         reviewer: PageReviewer | None = None,
+        recommender: RecommendationAgent | None = None,
         scroll_pause_ms: int = 250,
     ) -> None:
         self.sessions = sessions
@@ -54,6 +57,7 @@ class AnalysisRunner:
         self.explorer = SiteExplorer(browser, store, guard, scroll_pause_ms=scroll_pause_ms)
         self.predictor = predictor
         self.reviewer = reviewer
+        self.recommender = recommender
         self.after_page: PageHook | None = None
 
     async def run(self, run_id: uuid.UUID) -> None:
@@ -84,7 +88,8 @@ class AnalysisRunner:
             await self._finish(run_id, error="; ".join(failures) or "no pages captured")
             return
 
-        for stage, step in (("prediction", self._predict), ("audit", self._audit)):
+        steps = (("prediction", self._predict), ("audit", self._audit), ("report", self._report))
+        for stage, step in steps:
             try:
                 await step(run_id)
             except RunCancelledError:
@@ -191,6 +196,34 @@ class AnalysisRunner:
                 total += len(findings)
                 await runs.report(run, audited=done, findings=total, review_errors=review_errors)
                 await db.commit()
+
+    async def _report(self, run_id: uuid.UUID) -> None:
+        async with self.sessions() as db:
+            runs = RunRepository(db)
+            run = await self._running(runs, run_id)
+            await runs.report(run, stage="report")
+            await db.commit()
+            profile = AnalysisProfile.model_validate(run.profile)
+            findings = [Finding.model_validate(r.data) for r in await runs.findings(run_id)]
+            reviews = {
+                PageCapture.model_validate(page.capture).final_url: page.review
+                for page in await runs.pages(run_id)
+                if page.review
+            }
+        try:
+            report = await build_report(
+                profile.start_url, profile.language.value, findings, reviews, self.recommender
+            )
+        except ProviderError as exc:
+            log.warning("recommendations failed for run %s: %s", run_id, exc)
+            report = await build_report(
+                profile.start_url, profile.language.value, findings, reviews, None
+            )
+        async with self.sessions() as db:
+            runs = RunRepository(db)
+            run = await self._running(runs, run_id)
+            await runs.save_report(run, report)
+            await db.commit()
 
     async def _exercise(
         self, views: list[CapturedView], profile: AnalysisProfile, prefix: str
