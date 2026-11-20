@@ -10,6 +10,7 @@ import pytest
 from playwright.async_api import Browser, async_playwright
 
 from clarity_core.net.guard import AddressGuard
+from clarity_persistence.testing import database_url_for_tests, recreate_tables
 
 FIXTURE_ROOT = Path(__file__).resolve().parents[3] / "fixtures" / "bugfarmcc"
 
@@ -52,3 +53,12 @@ def probe_bundle() -> None:
             check=True,
             capture_output=True,
         )
+
+
+@pytest.fixture
+async def database_url() -> str:
+    url = database_url_for_tests()
+    if not url:
+        pytest.skip("CLARITY_TEST_DATABASE_URL is not configured")
+    await recreate_tables(url)
+    return url

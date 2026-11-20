@@ -3,10 +3,17 @@ name = "clarity-worker"
 version = "0.1.0"
 description = "Browser worker: exploration, capture and interaction testing."
 requires-python = ">=3.12"
-dependencies = ["clarity-core", "defusedxml>=0.7", "playwright>=1.49"]
+dependencies = [
+  "clarity-core",
+  "clarity-persistence",
+  "defusedxml>=0.7",
+  "playwright>=1.49",
+  "pydantic-settings>=2.6",
+]
 
 [tool.uv.sources]
 clarity-core = { workspace = true }
+clarity-persistence = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
