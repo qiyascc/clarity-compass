@@ -47,3 +47,11 @@ async def test_resolution_is_cached_per_host() -> None:
     for path in ("a", "b", "c"):
         await policy.evaluate("GET", f"https://theqiyas.cc/{path}")
     assert calls == ["theqiyas.cc"]
+
+
+async def test_mutations_can_be_scoped_to_one_site(policy: RequestPolicy) -> None:
+    policy.allow_mutations_to("https://theqiyas.cc/login")
+    assert await policy.evaluate("POST", "https://theqiyas.cc/session") is Verdict.ALLOW
+    assert await policy.evaluate("POST", "https://intranet.test/x") is Verdict.BLOCK_ADDRESS
+    policy.allow_mutations_to(None)
+    assert await policy.evaluate("POST", "https://theqiyas.cc/session") is Verdict.BLOCK_MUTATION

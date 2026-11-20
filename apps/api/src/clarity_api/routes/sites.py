@@ -53,7 +53,7 @@ async def set_credentials(
     site_id: uuid.UUID, body: LoginCredentials, db: Session, box: Box, _: CurrentUser
 ) -> None:
     site = await load_site(db, site_id)
-    site.credentials = box.seal(body.plaintext())
+    site.credentials = body.to_login().seal(box)
 
 
 @router.delete("/{site_id}/credentials", status_code=status.HTTP_204_NO_CONTENT)

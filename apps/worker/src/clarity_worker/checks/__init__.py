@@ -37,10 +37,15 @@ def run_checks(
 def drop_reported(findings: list[Finding], reported: set[SiteKey]) -> list[Finding]:
     kept = []
     for finding in findings:
-        if finding.anchor and finding.anchor.box:
-            box = finding.anchor.box
-            placement = f"{box.x:.0f},{box.y:.0f},{box.width:.0f}x{box.height:.0f}"
-            site_key = (finding.source, finding.anchor.text or "", placement)
+        anchor = finding.anchor
+        if anchor and (anchor.box or anchor.selector):
+            box = anchor.box
+            placement = (
+                f"{box.x:.0f},{box.y:.0f},{box.width:.0f}x{box.height:.0f}"
+                if box
+                else f"selector {anchor.selector}"
+            )
+            site_key = (finding.source, anchor.text or "", placement)
             if site_key in reported:
                 continue
             reported.add(site_key)

@@ -18,6 +18,7 @@ from clarity_core.net.guard import AddressGuard
 from clarity_persistence.database import create_engine, session_factory
 from clarity_persistence.models import RunStatus
 from clarity_persistence.repositories import RunRepository, SiteRepository
+from clarity_persistence.secrets import SecretBox, SiteLogin
 from clarity_saliency.predictor import AttentionPredictor
 from clarity_worker.predict import PagePredictor
 from clarity_worker.review import PageReviewer
@@ -250,7 +251,7 @@ async def test_audit_stores_checks_and_design_review(
     assert run.progress["audited"] == 1
     sources = {finding.source for finding in findings}
     assert {"check:console-errors", "check:broken-image", "agent:ux-designer"} <= sources
-    assert {"functional:no-effect", "functional:click-error"} <= sources
+    assert {"functional:no-effect", "functional:click-error", "axe:button-name"} <= sources
     assert run.report is not None
     assert run.report["totals"]["findings"] == len(findings)
     lead = next(page for page in pages if page.viewport == "desktop")
@@ -281,3 +282,42 @@ async def test_review_failures_do_not_fail_the_run(
     assert run is not None
     assert run.status is RunStatus.COMPLETED
     assert "overloaded" in run.progress["review_errors"][0]
+
+
+async def test_stored_login_opens_private_pages(
+    sessions: Sessions, browser: Browser, loopback_guard: AddressGuard, tmp_path: Path, bugfarm: str
+) -> None:
+    box = SecretBox("test-credentials")
+    async with sessions() as db:
+        site = await SiteRepository(db).create(
+            "Bugfarm",
+            AnalysisProfile(
+                start_url=f"{bugfarm}/about.html",
+                viewports=[Viewport.DESKTOP],
+                limits=CrawlLimits(max_pages=14, max_depth=2),
+            ),
+        )
+        site.credentials = SiteLogin(
+            f"{bugfarm}/login.html", "demo@bugfarm.test", "correct-horse"
+        ).seal(box)
+        run = await RunRepository(db).create(site)
+        await db.commit()
+        run_id = run.id
+
+    runner = AnalysisRunner(
+        sessions,
+        browser,
+        LocalArtifactStore(tmp_path),
+        loopback_guard,
+        secrets=box,
+        scroll_pause_ms=50,
+    )
+    await runner.run(run_id)
+
+    async with sessions() as db:
+        runs = RunRepository(db)
+        stored = await runs.get(run_id)
+        titles = {page.title for page in await runs.pages(run_id)}
+    assert stored is not None
+    assert stored.progress["login"] == {"signed_in": True, "reason": "signed in"}
+    assert {"Your account - BugFarm Estates", "Saved listings - BugFarm Estates"} <= titles

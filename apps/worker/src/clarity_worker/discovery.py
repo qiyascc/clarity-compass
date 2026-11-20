@@ -1,6 +1,7 @@
 import contextlib
 import heapq
 import itertools
+import re
 from dataclasses import dataclass, field
 from fnmatch import fnmatch
 from urllib.parse import urljoin, urlsplit
@@ -15,6 +16,8 @@ SKIPPED_EXTENSIONS = frozenset(
         ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx", ".csv", ".xml", ".json",
     }
 )  # fmt: skip
+
+SIGN_OUT = re.compile(r"(log-?out|sign-?out|logoff|çıkış|cixis|выход)", re.IGNORECASE)
 
 KEY_PAGE_HINTS = (
     "contact", "about", "login", "signin", "sign-in", "register", "signup", "sign-up",
@@ -93,7 +96,7 @@ class Frontier:
         if site_key(url) not in self._sites:
             return
         path = urlsplit(url).path
-        if _extension(path) in SKIPPED_EXTENSIONS:
+        if _extension(path) in SKIPPED_EXTENSIONS or SIGN_OUT.search(path):
             return
         if any(fnmatch(path, pattern) for pattern in self.exclude):
             return

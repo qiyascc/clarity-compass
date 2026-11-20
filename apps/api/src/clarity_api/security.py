@@ -1,4 +1,3 @@
-import base64
 import hashlib
 import secrets
 import time
@@ -6,7 +5,6 @@ from collections import defaultdict, deque
 
 from argon2 import PasswordHasher
 from argon2.exceptions import InvalidHashError, VerifyMismatchError
-from cryptography.fernet import Fernet, InvalidToken
 from itsdangerous import BadSignature, URLSafeTimedSerializer
 
 _hasher = PasswordHasher()
@@ -38,21 +36,6 @@ class SessionSigner:
             return None
         subject = payload.get("sub") if isinstance(payload, dict) else None
         return subject if isinstance(subject, str) else None
-
-
-class SecretBox:
-    def __init__(self, key: str) -> None:
-        digest = hashlib.sha256(key.encode()).digest()
-        self._fernet = Fernet(base64.urlsafe_b64encode(digest))
-
-    def seal(self, plaintext: bytes) -> bytes:
-        return self._fernet.encrypt(plaintext)
-
-    def open(self, token: bytes) -> bytes:
-        try:
-            return self._fernet.decrypt(token)
-        except InvalidToken as exc:
-            raise ValueError("cannot decrypt sealed value") from exc
 
 
 def new_extension_key() -> str:

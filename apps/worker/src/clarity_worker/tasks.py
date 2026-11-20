@@ -10,6 +10,7 @@ from clarity_ai.agents import RecommendationAgent
 from clarity_ai.factory import create_provider
 from clarity_persistence.database import create_engine, session_factory
 from clarity_persistence.jobs import ANALYSIS_QUEUE, RUN_ANALYSIS, create_job_app
+from clarity_persistence.secrets import SecretBox
 from clarity_saliency.predictor import AttentionPredictor
 from clarity_worker.predict import PagePredictor
 from clarity_worker.review import PageReviewer
@@ -63,6 +64,11 @@ async def execute(settings: WorkerSettings, run_id: uuid.UUID) -> None:
                     predictor=PagePredictor(store, attention) if attention else None,
                     reviewer=PageReviewer(provider, store) if provider else None,
                     recommender=RecommendationAgent(provider) if provider else None,
+                    secrets=(
+                        SecretBox(settings.credentials_key.get_secret_value())
+                        if settings.credentials_key
+                        else None
+                    ),
                 )
                 await runner.run(run_id)
             finally:

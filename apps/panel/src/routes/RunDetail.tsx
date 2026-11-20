@@ -39,6 +39,7 @@ export function RunDetail() {
 
   if (!run.data) return <ErrorText error={run.error} />;
   const failures = (run.data.progress.failures as string[] | undefined) ?? [];
+  const login = run.data.progress.login as { signed_in: boolean; reason: string } | undefined;
 
   return (
     <div className="space-y-6">
@@ -75,6 +76,11 @@ export function RunDetail() {
       {run.data.error && (
         <div className="rounded-md border border-critical/30 bg-red-50 p-4 font-mono text-xs text-critical">
           {run.data.error}
+        </div>
+      )}
+      {login && !login.signed_in && (
+        <div className="rounded-md border border-medium/30 bg-amber-50 p-4 text-sm text-medium">
+          Could not sign in with the stored login ({login.reason}); pages were audited as a visitor.
         </div>
       )}
       {failures.length > 0 && (

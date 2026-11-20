@@ -1,6 +1,7 @@
 import os
 from functools import cache
 from pathlib import Path
+from typing import Any
 
 from playwright.async_api import Page
 
@@ -36,3 +37,11 @@ async def take_snapshot(page: Page) -> bytes:
     await _ensure(page, "snapshot", "__claritySnapshot")
     serialised: str = await page.evaluate("() => JSON.stringify(window.__claritySnapshot.take())")
     return serialised.encode()
+
+
+async def run_axe(page: Page, language: str) -> list[dict[str, Any]]:
+    await _ensure(page, "axe", "__clarityAxe")
+    violations: list[dict[str, Any]] = await page.evaluate(
+        "(language) => window.__clarityAxe.run(language)", language
+    )
+    return violations

@@ -87,8 +87,14 @@ export function useSiteSecrets(id: string) {
   const refresh = () => client.invalidateQueries({ queryKey: keys.site(id) });
   return {
     saveCredentials: useMutation({
-      mutationFn: (body: { login_url: string; username: string; password: string }) =>
-        api<void>(`/sites/${id}/credentials`, send("PUT", body)),
+      mutationFn: (body: {
+        login_url: string;
+        username: string;
+        password: string;
+        username_selector: string | null;
+        password_selector: string | null;
+        submit_selector: string | null;
+      }) => api<void>(`/sites/${id}/credentials`, send("PUT", body)),
       onSuccess: refresh,
     }),
     clearCredentials: useMutation({

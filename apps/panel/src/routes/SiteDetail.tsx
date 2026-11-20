@@ -144,13 +144,28 @@ function Summary({ label, value }: { label: string; value: string }) {
 
 function Credentials({ siteId, configured }: { siteId: string; configured: boolean }) {
   const { saveCredentials, clearCredentials } = useSiteSecrets(siteId);
-  const [form, setForm] = useState({ login_url: "", username: "", password: "" });
+  const blank = {
+    login_url: "",
+    username: "",
+    password: "",
+    username_selector: "",
+    password_selector: "",
+    submit_selector: "",
+  };
+  const [form, setForm] = useState(blank);
 
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    saveCredentials.mutate(form, {
-      onSuccess: () => setForm({ login_url: "", username: "", password: "" }),
-    });
+    const optional = (value: string) => value.trim() || null;
+    saveCredentials.mutate(
+      {
+        ...form,
+        username_selector: optional(form.username_selector),
+        password_selector: optional(form.password_selector),
+        submit_selector: optional(form.submit_selector),
+      },
+      { onSuccess: () => setForm(blank) },
+    );
   };
 
   return (
@@ -190,6 +205,24 @@ function Credentials({ siteId, configured }: { siteId: string; configured: boole
             />
           </Field>
         </div>
+        <details className="text-sm">
+          <summary className="cursor-pointer text-ink-soft">
+            Selectors (only if the form is unusual)
+          </summary>
+          <div className="mt-3 grid gap-3">
+            {(["username_selector", "password_selector", "submit_selector"] as const).map(
+              (name) => (
+                <Field key={name} label={name.replace("_", " ")}>
+                  <Input
+                    value={form[name]}
+                    placeholder="#email"
+                    onChange={(e) => setForm({ ...form, [name]: e.target.value })}
+                  />
+                </Field>
+              ),
+            )}
+          </div>
+        </details>
         <ErrorText error={saveCredentials.error} />
         <Button type="submit" disabled={saveCredentials.isPending}>
           Save login

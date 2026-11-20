@@ -6,9 +6,10 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from clarity_api.queue import RunQueue
 from clarity_api.routes import artifacts, auth, extension, health, runs, sites
-from clarity_api.security import LoginThrottle, SecretBox, SessionSigner
+from clarity_api.security import LoginThrottle, SessionSigner
 from clarity_api.settings import Settings
 from clarity_persistence.database import create_engine, session_factory
+from clarity_persistence.secrets import SecretBox
 
 
 def create_app(settings: Settings, queue: RunQueue) -> FastAPI:

@@ -15,12 +15,15 @@ from clarity_core.domain.probe import PageProbe
 from clarity_core.domain.profile import AnalysisProfile
 from clarity_core.domain.viewport import Viewport
 from clarity_core.net.guard import AddressGuard
-from clarity_persistence.models import PageRecord, Run, RunStatus
+from clarity_persistence.models import PageRecord, Run, RunStatus, Site
 from clarity_persistence.repositories import RunRepository
-from clarity_worker.browser import open_context
+from clarity_persistence.secrets import SecretBox, SiteLogin
+from clarity_worker.accessibility import audit_accessibility
+from clarity_worker.browser import GuardedContext, open_context
 from clarity_worker.checks import drop_reported, run_checks
 from clarity_worker.explorer import SiteExplorer
 from clarity_worker.functional.auditor import FunctionalAuditor
+from clarity_worker.login import sign_in
 from clarity_worker.policy import RequestPolicy
 from clarity_worker.predict import PagePredictor
 from clarity_worker.report import build_report
@@ -48,6 +51,7 @@ class AnalysisRunner:
         predictor: PagePredictor | None = None,
         reviewer: PageReviewer | None = None,
         recommender: RecommendationAgent | None = None,
+        secrets: SecretBox | None = None,
         scroll_pause_ms: int = 250,
     ) -> None:
         self.sessions = sessions
@@ -58,6 +62,8 @@ class AnalysisRunner:
         self.predictor = predictor
         self.reviewer = reviewer
         self.recommender = recommender
+        self.secrets = secrets
+        self._login: SiteLogin | None = None
         self.after_page: PageHook | None = None
 
     async def run(self, run_id: uuid.UUID) -> None:
@@ -70,10 +76,15 @@ class AnalysisRunner:
             await runs.report(run, stage="explore", pages=0)
             await db.commit()
             profile = AnalysisProfile.model_validate(run.profile)
+            site = await db.get(Site, run.site_id)
+            self._login = self._site_login(site)
 
         try:
             exploration = await self.explorer.explore(
-                profile, run_id=str(run_id), on_page=lambda capture: self._store(run_id, capture)
+                profile,
+                run_id=str(run_id),
+                on_page=lambda capture: self._store(run_id, capture),
+                prepare=(lambda context: self._sign_in(run_id, context)) if self._login else None,
             )
         except RunCancelledError:
             log.info("run %s cancelled", run_id)
@@ -197,6 +208,26 @@ class AnalysisRunner:
                 await runs.report(run, audited=done, findings=total, review_errors=review_errors)
                 await db.commit()
 
+    def _site_login(self, site: Site | None) -> SiteLogin | None:
+        if site is None or site.credentials is None or self.secrets is None:
+            return None
+        try:
+            return SiteLogin.open(self.secrets, site.credentials)
+        except ValueError:
+            log.warning("stored login for site %s cannot be decrypted", site.id)
+            return None
+
+    async def _sign_in(self, run_id: uuid.UUID, context: GuardedContext) -> str | None:
+        if self._login is None:
+            return None
+        result = await sign_in(context, self._login)
+        async with self.sessions() as db:
+            runs = RunRepository(db)
+            run = await self._running(runs, run_id)
+            await runs.report(run, login={"signed_in": result.signed_in, "reason": result.reason})
+            await db.commit()
+        return result.landed_on if result.signed_in else None
+
     async def _report(self, run_id: uuid.UUID) -> None:
         async with self.sessions() as db:
             runs = RunRepository(db)
@@ -241,7 +272,12 @@ class AnalysisRunner:
             )
             policy = RequestPolicy(self.guard)
             async with open_context(self.browser, view.capture.viewport, policy) as context:
+                if self._login:
+                    await sign_in(context, self._login)
                 try:
+                    findings += await audit_accessibility(
+                        context, view.capture.final_url, profile.language.value
+                    )
                     findings += await auditor.audit(context, view.capture.final_url)
                 except PlaywrightError as exc:
                     log.warning("interaction audit failed for %s: %s", view.capture.final_url, exc)

@@ -3,8 +3,8 @@ import uuid
 from fastapi import FastAPI
 from httpx import AsyncClient
 
-from clarity_api.security import SecretBox
 from clarity_persistence.models import Site
+from clarity_persistence.secrets import SecretBox
 
 QIYAS: dict[str, object] = {"name": "Qiyas", "profile": {"start_url": "theqiyas.cc"}}
 

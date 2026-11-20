@@ -19,6 +19,7 @@ from clarity_worker.sitemap import parse_robots, parse_sitemap
 from clarity_worker.store import ArtifactStore
 
 PageCallback = Callable[[PageCapture], Awaitable[None]]
+Prepare = Callable[[GuardedContext], Awaitable[str | None]]
 
 MAX_SITEMAPS = 5
 MAX_REDIRECTS = 3
@@ -56,6 +57,7 @@ class SiteExplorer:
         profile: AnalysisProfile,
         run_id: str,
         on_page: PageCallback | None = None,
+        prepare: Prepare | None = None,
     ) -> Exploration:
         frontier = _frontier_for(profile)
         result = Exploration()
@@ -69,6 +71,10 @@ class SiteExplorer:
                 for viewport in profile.viewports
             ]
             primary = contexts[0]
+            if prepare:
+                landings = [await prepare(context) for context in contexts]
+                if follow_links and landings[0]:
+                    frontier.add_links(profile.start_url, [landings[0]], depth=0)
             sitemap_checked = not follow_links
 
             while (item := frontier.pop()) is not None:

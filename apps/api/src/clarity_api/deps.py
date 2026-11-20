@@ -5,8 +5,9 @@ from fastapi import Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from clarity_api.queue import RunQueue
-from clarity_api.security import SecretBox, SessionSigner
+from clarity_api.security import SessionSigner
 from clarity_api.settings import Settings
+from clarity_persistence.secrets import SecretBox
 
 SESSION_COOKIE = "cc_session"
 
