@@ -1,37 +1,37 @@
-import { Link, Navigate, Outlet, useNavigate } from "react-router";
+import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router";
 import { useLogout, useMe } from "@/api/hooks";
+import { Logo } from "@/components/Logo";
+import { Landing } from "./Landing";
 
 export function Layout() {
   const me = useMe();
   const logout = useLogout();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
 
   if (me.isPending) return null;
-  if (me.isError) return <Navigate to="/login" replace />;
+  if (me.isError) return pathname === "/" ? <Landing /> : <Navigate to="/login" replace />;
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-line bg-white print:hidden">
+      <header className="sticky top-0 z-20 border-b border-line bg-white/85 backdrop-blur print:hidden">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
-            <span className="grid size-6 place-items-center rounded-full border-2 border-accent">
-              <span className="size-1.5 rounded-full bg-accent" />
-            </span>
-            Clarity Compass
+          <Link to="/">
+            <Logo />
           </Link>
-          <div className="flex items-center gap-4 text-sm text-ink-soft">
-            <span>{me.data.username}</span>
+          <div className="flex items-center gap-5 text-sm text-ink-soft">
+            <span className="hidden font-mono text-xs sm:inline">{me.data.username}</span>
             <button
               type="button"
-              className="hover:text-ink"
-              onClick={() => logout.mutate(undefined, { onSuccess: () => navigate("/login") })}
+              className="transition-colors hover:text-ink"
+              onClick={() => logout.mutate(undefined, { onSuccess: () => navigate("/") })}
             >
               Sign out
             </button>
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8 print:max-w-none print:p-0">
+      <main className="mx-auto max-w-6xl px-6 py-10 print:max-w-none print:p-0">
         <Outlet />
       </main>
     </div>
