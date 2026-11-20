@@ -15,17 +15,20 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY packages/core/pyproject.toml packages/core/
 COPY packages/persistence/pyproject.toml packages/persistence/
+COPY packages/saliency/pyproject.toml packages/saliency/
 COPY apps/api/pyproject.toml apps/api/
 COPY apps/worker/pyproject.toml apps/worker/
 RUN uv sync --frozen --no-dev --no-install-workspace --package clarity-worker
 
 COPY packages/core packages/core
 COPY packages/persistence packages/persistence
+COPY packages/saliency packages/saliency
 COPY apps/worker apps/worker
 RUN uv sync --frozen --no-dev --package clarity-worker
+RUN /app/.venv/bin/python -m clarity_saliency fetch /app/models
 COPY --from=bundles /src/packages/probe/dist /app/bundles
 
-ENV PATH="/app/.venv/bin:$PATH" CLARITY_BUNDLE_DIR=/app/bundles
+ENV PATH="/app/.venv/bin:$PATH" CLARITY_BUNDLE_DIR=/app/bundles CLARITY_MODEL_DIR=/app/models
 RUN mkdir -p /data/artifacts && chown pwuser /data/artifacts
 USER pwuser
 CMD ["python", "-m", "clarity_worker"]
