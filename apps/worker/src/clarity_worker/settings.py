@@ -22,6 +22,7 @@ class WorkerSettings(BaseSettings):
     ai_model: str | None = None
     ai_base_url: str | None = None
     ai_api_key: SecretStr | None = None
+    credentials_key: SecretStr | None = None
 
     def guard(self) -> AddressGuard:
         networks: list[IPNetwork] = [ipaddress.ip_network(net) for net in self.allowed_networks]
