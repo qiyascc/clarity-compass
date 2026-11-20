@@ -1,24 +1,24 @@
 const styles: Record<string, string> = {
-  queued: "bg-paper text-ink-soft",
-  running: "bg-accent-soft text-accent",
-  completed: "bg-emerald-50 text-emerald-700",
-  failed: "bg-red-50 text-critical",
-  cancelled: "bg-paper text-ink-faint",
-  critical: "bg-red-50 text-critical",
-  high: "bg-orange-50 text-high",
-  medium: "bg-amber-50 text-medium",
-  low: "bg-blue-50 text-low",
-  suggestion: "bg-indigo-50 text-suggestion",
-  verified: "bg-emerald-50 text-emerald-700",
-  predicted: "bg-paper text-ink-soft",
+  queued: "border border-line text-ink-faint",
+  running: "border border-ink text-ink",
+  completed: "bg-ink text-white",
+  failed: "border border-dashed border-ink text-ink",
+  cancelled: "border border-line text-ink-faint line-through",
+  critical: "bg-ink text-white",
+  high: "border border-ink text-ink",
+  medium: "border border-ink-faint text-ink",
+  low: "border border-line text-ink-soft",
+  suggestion: "border border-dashed border-line text-ink-faint",
+  verified: "bg-ink text-white",
+  predicted: "border border-line text-ink-soft",
 };
 
 export function StatusBadge({ value }: { value: string }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium capitalize ${styles[value] ?? styles.queued}`}
+      className={`inline-flex h-5 items-center gap-1.5 rounded-full px-2 text-[11px] font-medium capitalize tracking-wide ${styles[value] ?? styles.queued}`}
     >
-      {value === "running" && <span className="size-1.5 animate-pulse rounded-full bg-accent" />}
+      {value === "running" && <span className="size-1.5 animate-pulse rounded-full bg-ink" />}
       {value}
     </span>
   );

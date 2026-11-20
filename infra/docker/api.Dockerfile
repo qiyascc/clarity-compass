@@ -20,4 +20,4 @@ ENV PATH="/app/.venv/bin:$PATH"
 RUN useradd --system --uid 10001 clarity && mkdir -p /data/artifacts && chown clarity /data/artifacts
 USER clarity
 EXPOSE 8000
-CMD ["uvicorn", "clarity_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers"]
+CMD ["uvicorn", "clarity_api.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]

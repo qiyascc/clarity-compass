@@ -1,22 +1,28 @@
 @import "tailwindcss";
+@import "@fontsource-variable/geist";
+@import "@fontsource-variable/geist-mono";
 
 @theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --color-ink: #14171c;
-  --color-ink-soft: #4a5260;
-  --color-ink-faint: #8a93a3;
-  --color-line: #e3e6eb;
-  --color-paper: #f7f8fa;
-  --color-accent: #0f766e;
-  --color-accent-soft: #e6f4f2;
-  --color-critical: #b42318;
-  --color-high: #c4320a;
-  --color-medium: #b54708;
-  --color-low: #175cd3;
-  --color-suggestion: #5e6ad2;
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono Variable", ui-monospace, monospace;
+  --color-ink: #0a0a0a;
+  --color-ink-soft: #525252;
+  --color-ink-faint: #a3a3a3;
+  --color-line: #e5e5e5;
+  --color-paper: #fafafa;
+  --color-accent: #0a0a0a;
+  --color-accent-soft: #f0f0f0;
+  --color-critical: #0a0a0a;
+  --color-high: #262626;
+  --color-medium: #404040;
+  --color-low: #737373;
+  --color-suggestion: #a3a3a3;
 }
 
 body {
   @apply bg-paper text-ink antialiased;
+}
+
+::selection {
+  @apply bg-ink text-white;
 }
