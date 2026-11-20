@@ -99,14 +99,14 @@ export function RunDetail() {
       <div className="space-y-4">
         <h2 className="text-sm font-semibold">Pages ({byUrl.length})</h2>
         {byUrl.map(([url, captures]) => (
-          <PageCard key={url} url={url} captures={captures} />
+          <PageCard key={url} runId={runId} url={url} captures={captures} />
         ))}
       </div>
     </div>
   );
 }
 
-function PageCard({ url, captures }: { url: string; captures: Page[] }) {
+function PageCard({ runId, url, captures }: { runId: string; url: string; captures: Page[] }) {
   const [selected, setSelected] = useState(0);
   const [showHeat, setShowHeat] = useState(true);
   const page = captures[selected] ?? captures[0];
@@ -153,7 +153,15 @@ function PageCard({ url, captures }: { url: string; captures: Page[] }) {
         </div>
       }
     >
-      <p className="mb-3 truncate font-mono text-xs text-ink-soft">{capture.final_url}</p>
+      <div className="mb-3 flex items-center justify-between gap-4">
+        <p className="truncate font-mono text-xs text-ink-soft">{capture.final_url}</p>
+        <Link
+          to={`/runs/${runId}/pages/${page.id}`}
+          className="shrink-0 text-xs font-medium text-accent hover:underline"
+        >
+          Open with overlay →
+        </Link>
+      </div>
       <dl className="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-ink-soft">
         <Stat label="Status" value={page.status_code ?? "-"} />
         <Stat label="Load" value={`${capture.load_ms} ms`} />
