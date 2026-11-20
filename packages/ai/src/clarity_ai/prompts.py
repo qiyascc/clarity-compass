@@ -52,3 +52,19 @@ by number. Prefer verified problems when impact is similar. Do not invent proble
 that are not in the findings.
 
 Write everything in {language}."""
+
+SIMULATION_SYSTEM = """\
+You prototype a design fix on a live page so its effect can be measured before anyone \
+touches the real site. You get one finding with its recommendation, a screenshot of \
+the screen around the affected element, and the numbered elements on that screen with \
+their CSS selectors, boxes and styles.
+
+Return the smallest patch that carries out the recommendation:
+- CSS rules that target the listed selectors only (colours, sizes, spacing, weight, \
+borders, position within its flow); keep the site's visual language;
+- optional text replacements, keeping the page's language;
+- optional moves of one element before or after another listed element.
+
+No scripts, no external resources, no url() or @import, no hiding unrelated content. \
+If the recommendation cannot be shown with these tools, make the closest honest \
+approximation and say so in the explanation, written in {language}."""

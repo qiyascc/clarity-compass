@@ -2,10 +2,16 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from clarity_ai.agents import DesignReviewAgent, RecommendationAgent, UnderstandingAgent
+from clarity_ai.agents import (
+    DesignReviewAgent,
+    RecommendationAgent,
+    SimulationAgent,
+    UnderstandingAgent,
+)
 from clarity_ai.context import ElementLine, PageContext, Shot
 from clarity_ai.provider import Generated, Image, Prompt, Text
 from clarity_ai.schemas import (
+    DesignPatch,
     DesignReview,
     NoteSeverity,
     PageKind,
@@ -133,3 +139,16 @@ async def test_recommendations_drop_unknown_finding_numbers() -> None:
     assert "Russian" in prompt.system
     text = "\n".join(part.text for part in prompt.parts if isinstance(part, Text))
     assert "2. [low predicted] b" in text
+
+
+async def test_simulation_prompt_names_the_target_and_language() -> None:
+    patch = DesignPatch(css="#cta { background: #0f766e; }", changes=[], explanation="Darker CTA.")
+    provider = ScriptedProvider(patch)
+    result = await SimulationAgent(provider).run(
+        "Contact button is hard to see", b"jpeg", ["#1 | a#cta | Contact"], 1, "tr"
+    )
+    assert result.value.css.startswith("#cta")
+    prompt = provider.prompts[0]
+    assert "Turkish" in prompt.system
+    assert any(isinstance(p, Text) and "element #1" in p.text for p in prompt.parts)
+    assert any(isinstance(p, Image) for p in prompt.parts)

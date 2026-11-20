@@ -1,7 +1,18 @@
 from clarity_ai.context import LANGUAGE_NAMES, PageContext
-from clarity_ai.prompts import DESIGN_REVIEW_SYSTEM, SYNTHESIS_SYSTEM, UNDERSTANDING_SYSTEM
+from clarity_ai.prompts import (
+    DESIGN_REVIEW_SYSTEM,
+    SIMULATION_SYSTEM,
+    SYNTHESIS_SYSTEM,
+    UNDERSTANDING_SYSTEM,
+)
 from clarity_ai.provider import Generated, Image, LLMProvider, Part, Prompt, Text
-from clarity_ai.schemas import DesignReview, PageUnderstanding, ReviewNote, SiteAssessment
+from clarity_ai.schemas import (
+    DesignPatch,
+    DesignReview,
+    PageUnderstanding,
+    ReviewNote,
+    SiteAssessment,
+)
 
 MAX_NOTES = 12
 
@@ -91,6 +102,33 @@ class RecommendationAgent:
         ]
         assessment = generated.value.model_copy(update={"priorities": cleaned})
         return Generated(assessment, generated.model, generated.usage)
+
+
+class SimulationAgent:
+    def __init__(self, provider: LLMProvider) -> None:
+        self.provider = provider
+
+    async def run(
+        self,
+        finding: str,
+        screenshot: bytes,
+        elements: list[str],
+        target: int,
+        language: str,
+    ) -> Generated[DesignPatch]:
+        system = SIMULATION_SYSTEM.format(language=LANGUAGE_NAMES.get(language, "English"))
+        prompt = Prompt(
+            system=system,
+            parts=[
+                Text(f"Finding:\n{finding}"),
+                Text(f"The finding is about element #{target}."),
+                Image(screenshot, label="current screen"),
+                Text("Elements on this screen:\n" + "\n".join(elements)),
+            ],
+            max_tokens=8_000,
+            effort="medium",
+        )
+        return await self.provider.structured(prompt, DesignPatch)
 
 
 SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "suggestion": 4}

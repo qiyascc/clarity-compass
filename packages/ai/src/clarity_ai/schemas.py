@@ -91,3 +91,18 @@ class SiteAssessment(BaseModel):
     assessment: str = Field(description="One paragraph on the overall experience of the site.")
     strengths: list[str]
     priorities: list[PriorityItem]
+
+
+class ElementChange(BaseModel):
+    element: int = Field(description="Number of the element to change.")
+    text: str | None = Field(description="New visible text, or null to keep it.")
+    move: Literal["none", "before", "after"]
+    reference: int | None = Field(
+        description="Element number to move next to when move is before or after, else null."
+    )
+
+
+class DesignPatch(BaseModel):
+    css: str = Field(description="CSS rules for the listed selectors only; no url() or @import.")
+    changes: list[ElementChange]
+    explanation: str = Field(description="One sentence describing what the patch changes.")
