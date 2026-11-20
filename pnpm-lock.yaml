@@ -17,6 +17,9 @@ importers:
 
   apps/panel:
     dependencies:
+      '@qiyascc/clarity-overlay':
+        specifier: https://github.com/qiyascc/clarity-overlay/releases/download/v0.1.0/qiyascc-clarity-overlay-0.1.0.tgz
+        version: https://github.com/qiyascc/clarity-overlay/releases/download/v0.1.0/qiyascc-clarity-overlay-0.1.0.tgz
       '@tanstack/react-query':
         specifier: ^5.108.1
         version: 5.108.1(@types/react@19.3.0)(react@19.3.1)
@@ -29,6 +32,9 @@ importers:
       react-router:
         specifier: ^8.5.2
         version: 8.5.2(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      rrweb-snapshot:
+        specifier: 2.2.2
+        version: 2.2.2
     devDependencies:
       '@tailwindcss/vite':
         specifier: ^4.3.5
@@ -352,6 +358,10 @@ packages:
 
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
+
+  '@qiyascc/clarity-overlay@https://github.com/qiyascc/clarity-overlay/releases/download/v0.1.0/qiyascc-clarity-overlay-0.1.0.tgz':
+    resolution: {tarball: https://github.com/qiyascc/clarity-overlay/releases/download/v0.1.0/qiyascc-clarity-overlay-0.1.0.tgz}
+    version: 0.1.0
 
   '@redocly/ajv@8.11.2':
     resolution: {integrity: sha512-io1JpnwtIcvojV7QKDUSIuMN/ikdOUd1ReEnUnMKGfDVridQZ31J0MmIuqwuRjWDZfmvr+Q0MqCcfHM2gTivOg==}
@@ -1298,6 +1308,8 @@ snapshots:
     optional: true
 
   '@oxc-project/types@0.156.0': {}
+
+  '@qiyascc/clarity-overlay@https://github.com/qiyascc/clarity-overlay/releases/download/v0.1.0/qiyascc-clarity-overlay-0.1.0.tgz': {}
 
   '@redocly/ajv@8.11.2':
     dependencies:
