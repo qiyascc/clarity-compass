@@ -16,6 +16,6 @@
     "vitest": "^5.1.1"
   },
   "dependencies": {
-    "@qiyascc/clarity-overlay": "https://github.com/qiyascc/clarity-overlay/releases/download/v0.1.0/qiyascc-clarity-overlay-0.1.0.tgz"
+    "@qiyascc/clarity-overlay": "https://github.com/qiyascc/overlay-sdk/releases/download/v0.1.0/qiyascc-clarity-overlay-0.1.0.tgz"
   }
 }
