@@ -1,0 +1,76 @@
+name: clarity-compass
+
+x-app-env: &app-env
+  CLARITY_DATABASE_URL: postgresql+asyncpg://clarity:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}@postgres:5432/clarity
+  CLARITY_ARTIFACT_DIR: /data/artifacts
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: clarity
+      POSTGRES_DB: clarity
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    networks: [internal]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U clarity -d clarity"]
+      interval: 5s
+      retries: 10
+
+  migrate:
+    build: { context: .., dockerfile: infra/docker/api.Dockerfile }
+    command: ["alembic", "-c", "packages/persistence/alembic.ini", "upgrade", "head"]
+    environment: *app-env
+    networks: [internal]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  api:
+    build: { context: .., dockerfile: infra/docker/api.Dockerfile }
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      CLARITY_SECRET_KEY: ${CLARITY_SECRET_KEY:?set CLARITY_SECRET_KEY}
+      CLARITY_CREDENTIALS_KEY: ${CLARITY_CREDENTIALS_KEY:?set CLARITY_CREDENTIALS_KEY}
+      CLARITY_ADMIN_USERNAME: ${CLARITY_ADMIN_USERNAME:-admin}
+      CLARITY_ADMIN_PASSWORD_HASH: ${CLARITY_ADMIN_PASSWORD_HASH:?set CLARITY_ADMIN_PASSWORD_HASH}
+      CLARITY_SECURE_COOKIES: ${CLARITY_SECURE_COOKIES:-true}
+    volumes:
+      - artifacts:/data/artifacts:ro
+    networks: [internal]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+
+  worker:
+    build: { context: .., dockerfile: infra/docker/worker.Dockerfile }
+    restart: unless-stopped
+    environment:
+      <<: *app-env
+      CLARITY_EGRESS_PROXY: http://egress:4750
+      CLARITY_CONCURRENCY: ${CLARITY_CONCURRENCY:-1}
+      HTTPS_PROXY: http://egress:4750
+      NO_PROXY: postgres,localhost,127.0.0.1
+    volumes:
+      - artifacts:/data/artifacts
+    networks: [internal]
+    shm_size: 1gb
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+      egress: { condition: service_started }
+
+  egress:
+    build: { context: .., dockerfile: infra/docker/smokescreen.Dockerfile }
+    restart: unless-stopped
+    networks: [internal, public]
+
+volumes:
+  postgres:
+  artifacts:
+
+networks:
+  internal:
+    internal: true
+  public:

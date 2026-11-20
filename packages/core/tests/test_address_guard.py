@@ -71,3 +71,13 @@ async def test_allowlisted_network_is_permitted() -> None:
         allow=[ipaddress.ip_network("127.0.0.0/8")],
     )
     assert await guard.check_url("http://fixture.local/")
+
+
+async def test_unresolvable_host_can_be_left_to_the_egress_proxy() -> None:
+    async def fail(host: str) -> list[str]:
+        raise OSError("no resolver on this network")
+
+    guard = AddressGuard(resolve=fail, allow_unresolved=True)
+    assert await guard.check_url("https://theqiyas.cc/") == []
+    with pytest.raises(UnsafeTargetError):
+        await guard.check_url("http://10.0.0.1/")
