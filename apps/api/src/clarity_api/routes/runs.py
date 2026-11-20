@@ -8,6 +8,7 @@ from clarity_api.deps import CurrentUser, Queue, Session
 from clarity_api.routes.sites import load_site
 from clarity_api.schemas import PageOut, RunOut
 from clarity_core.domain.findings import Category, Finding, Severity, Status
+from clarity_core.domain.report import Report
 from clarity_persistence.models import Run, RunStatus
 from clarity_persistence.repositories import RunRepository
 
@@ -54,6 +55,14 @@ async def cancel_run(run_id: uuid.UUID, db: Session, _: CurrentUser) -> RunOut:
         raise HTTPException(status.HTTP_409_CONFLICT, "run already finished")
     await RunRepository(db).cancel(run)
     return RunOut.of(run)
+
+
+@router.get("/runs/{run_id}/report")
+async def get_report(run_id: uuid.UUID, db: Session, _: CurrentUser) -> Report:
+    run = await load_run(db, run_id)
+    if run.report is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "the report is not ready yet")
+    return Report.model_validate(run.report)
 
 
 @router.get("/runs/{run_id}/pages")
