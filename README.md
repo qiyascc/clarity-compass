@@ -46,6 +46,14 @@ pnpm --filter @clarity-compass/panel dev
 
 `make check` runs linters, type checkers and all tests.
 
+## Browser extension
+
+`apps/extension` builds an unpacked Chrome extension (`pnpm --filter
+@clarity-compass/extension build`, then load `apps/extension/dist`). Generate a
+key on the site's page in the panel, enter the panel address and the key in the
+extension and open the site: heatmap, predicted clicks and notes appear on the
+real pages as you browse them.
+
 ## Deployment
 
 Docker Compose on a single host. See [docs/deployment.md](docs/deployment.md).
