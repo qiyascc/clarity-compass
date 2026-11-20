@@ -107,6 +107,10 @@ class RunRepository:
         page.predictions = _dump(prediction)
         await self.session.flush()
 
+    async def save_review(self, page: PageRecord, review: dict[str, Any]) -> None:
+        page.review = review
+        await self.session.flush()
+
     async def pages(self, run_id: uuid.UUID) -> Sequence[PageRecord]:
         query = (
             select(PageRecord).where(PageRecord.run_id == run_id).order_by(PageRecord.created_at)
