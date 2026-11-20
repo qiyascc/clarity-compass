@@ -46,6 +46,8 @@ export function collect(): PageProbe {
       document.documentElement.scrollHeight,
       document.body?.scrollHeight ?? 0,
     ),
+    documentWidth: document.documentElement.scrollWidth,
+    overflowing: collectOverflowing(),
     headings: collectHeadings(),
     elements,
     images: collectImages(),
@@ -135,6 +137,21 @@ function effectiveBackground(element: Element): { color: Rgba | null; image: boo
   const base = layers.at(-1)?.a === 1 ? (layers.pop() as Rgba) : WHITE;
   const color = layers.reduceRight((under, layer) => blend(layer, under), base);
   return { color, image };
+}
+
+function collectOverflowing(): string[] {
+  const limit = document.documentElement.clientWidth + 1;
+  if (document.documentElement.scrollWidth <= limit) return [];
+  const culprits: string[] = [];
+  for (const element of document.body?.querySelectorAll("*") ?? []) {
+    const rect = element.getBoundingClientRect();
+    if (rect.right <= limit || rect.width === 0) continue;
+    const parent = element.parentElement?.getBoundingClientRect();
+    if (parent && parent.right > limit) continue;
+    culprits.push(uniqueSelector(element));
+    if (culprits.length >= 5) break;
+  }
+  return culprits;
 }
 
 function collectHeadings(): Heading[] {
