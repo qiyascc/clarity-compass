@@ -94,3 +94,10 @@ def test_redirect_target_is_not_visited_twice() -> None:
     frontier.mark_visited("https://new.test/")
     frontier.add_links("https://new.test/", ["/", "/about"])
     assert drain(frontier) == ["https://new.test/about"]
+
+
+def test_sign_out_links_are_never_followed() -> None:
+    frontier = Frontier("https://shop.test/", max_pages=10, max_depth=2)
+    frontier.pop()
+    frontier.add_links("https://shop.test/", ["/logout", "/account/sign-out", "/account"])
+    assert drain(frontier) == ["https://shop.test/account"]
