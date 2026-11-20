@@ -8,6 +8,7 @@ import {
   useStartRun,
   useUpdateSite,
 } from "@/api/hooks";
+import { CopyField } from "@/components/CopyButton";
 import { ProfileForm } from "@/components/ProfileForm";
 import { fromProfile, toProfile } from "@/components/profile";
 import { StatusBadge } from "@/components/StatusBadge";
@@ -242,11 +243,14 @@ function ExtensionKey({ siteId, configured }: { siteId: string; configured: bool
       actions={configured && <Button onClick={() => revokeKey.mutate()}>Revoke</Button>}
     >
       <p className="mb-4 text-sm text-ink-soft">
-        Enter this key in the Clarity Compass extension to open the site with the analysis overlay.
+        Enter this key in the Clarity Compass extension to open the site with the analysis overlay.{" "}
+        <Link to="/extension" className="font-medium text-ink underline underline-offset-4">
+          How to install the extension
+        </Link>
       </p>
       {key ? (
         <div className="space-y-2">
-          <code className="block break-all rounded-md bg-paper p-3 font-mono text-xs">{key}</code>
+          <CopyField value={key} />
           <p className="text-xs text-medium">Copy it now - it is not shown again.</p>
         </div>
       ) : (
