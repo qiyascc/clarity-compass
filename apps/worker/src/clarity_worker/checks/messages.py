@@ -339,6 +339,194 @@ CATALOG: dict[str, dict[str, Message]] = {
             "и кэшируйте статику.",
         ),
     },
+    "no-effect": {
+        "en": Message(
+            "Clicking “{text}” does nothing",
+            "We clicked it in a real browser and nothing happened: no navigation, no change to "
+            "the page, no request, no dialog and no scroll. Visitors who try it will think the "
+            "site is broken.",
+            "Wire the control to its action, or remove it if it has none. If it should open "
+            "something, check its event handler and the console.",
+        ),
+        "tr": Message(
+            "“{text}” tıklanınca hiçbir şey olmuyor",
+            "Gerçek bir tarayıcıda tıkladık ve hiçbir şey olmadı: yönlendirme, sayfa "
+            "değişikliği, istek, diyalog ya da kaydırma yok. Deneyen ziyaretçi sitenin bozuk "
+            "olduğunu düşünür.",
+            "Kontrolü eylemine bağlayın ya da işlevi yoksa kaldırın. Bir şey açması gerekiyorsa "
+            "olay dinleyicisini ve konsolu kontrol edin.",
+        ),
+        "az": Message(
+            "“{text}” kliklənəndə heç nə baş vermir",
+            "Real brauzerdə kliklədik və heç nə baş vermədi: keçid, səhifədə dəyişiklik, sorğu, "
+            "dialoq və ya sürüşmə yoxdur. Sınayan ziyarətçi saytın xarab olduğunu düşünəcək.",
+            "İdarəetmə elementini öz əməliyyatına bağlayın və ya funksiyası yoxdursa silin. Nəsə "
+            "açmalıdırsa, hadisə dinləyicisini və konsolu yoxlayın.",
+        ),
+        "ru": Message(
+            "Нажатие на «{text}» ничего не делает",
+            "Мы нажали на элемент в настоящем браузере, и ничего не произошло: ни перехода, ни "
+            "изменений на странице, ни запроса, ни диалога, ни прокрутки. Посетитель решит, что "
+            "сайт сломан.",
+            "Привяжите элемент к действию или уберите его, если действия нет. Если он должен "
+            "что-то открывать, проверьте обработчик события и консоль.",
+        ),
+    },
+    "click-error": {
+        "en": Message(
+            "Clicking “{text}” throws an error",
+            "Clicking it raised a JavaScript error: “{error}”. Whatever it was meant to do "
+            "did not finish.",
+            "Fix the error in the click handler; the message points to the failing call.",
+        ),
+        "tr": Message(
+            "“{text}” tıklanınca hata oluşuyor",
+            "Tıklama bir JavaScript hatasına yol açtı: “{error}”. Yapması gereken işlem "
+            "tamamlanmadı.",
+            "Tıklama işleyicisindeki hatayı düzeltin; mesaj başarısız çağrıyı gösteriyor.",
+        ),
+        "az": Message(
+            "“{text}” kliklənəndə xəta yaranır",
+            "Klik JavaScript xətasına səbəb oldu: “{error}”. Görməli olduğu iş tamamlanmadı.",
+            "Klik işləyicisindəki xətanı düzəldin; mesaj uğursuz çağırışı göstərir.",
+        ),
+        "ru": Message(
+            "Нажатие на «{text}» вызывает ошибку",
+            "Нажатие привело к ошибке JavaScript: «{error}». Действие не завершилось.",
+            "Исправьте ошибку в обработчике нажатия; сообщение указывает на сбойный вызов.",
+        ),
+    },
+    "anchor-missing": {
+        "en": Message(
+            "“{text}” points to a section that does not exist",
+            "The link goes to #{target}, but no element on the page has that id, so clicking "
+            "it leaves the visitor where they were.",
+            'Give the intended section id="{target}" or change the link to an existing id.',
+        ),
+        "tr": Message(
+            "“{text}” var olmayan bir bölüme gidiyor",
+            "Bağlantı #{target} adresine gidiyor ama sayfada bu id'ye sahip bir öğe yok; "
+            "tıklayan ziyaretçi olduğu yerde kalıyor.",
+            'Hedef bölüme id="{target}" verin ya da bağlantıyı var olan bir id\'ye çevirin.',
+        ),
+        "az": Message(
+            "“{text}” mövcud olmayan bölməyə aparır",
+            "Keçid #{target} ünvanına aparır, amma səhifədə bu id-yə malik element yoxdur; "
+            "klikləyən ziyarətçi olduğu yerdə qalır.",
+            'Hədəf bölməyə id="{target}" verin və ya keçidi mövcud id-yə dəyişin.',
+        ),
+        "ru": Message(
+            "«{text}» ведёт к несуществующему разделу",
+            "Ссылка ведёт на #{target}, но на странице нет элемента с таким id, и посетитель "
+            "остаётся на месте.",
+            'Задайте нужному разделу id="{target}" или поменяйте ссылку на существующий id.',
+        ),
+    },
+    "broken-link": {
+        "en": Message(
+            "“{text}” leads to an error page",
+            "The link points to {url}, which answers HTTP {status}.",
+            "Update the link to the right address or restore the page it points to.",
+        ),
+        "tr": Message(
+            "“{text}” hata sayfasına gidiyor",
+            "Bağlantı {url} adresine gidiyor ve bu adres HTTP {status} döndürüyor.",
+            "Bağlantıyı doğru adrese güncelleyin ya da gittiği sayfayı geri getirin.",
+        ),
+        "az": Message(
+            "“{text}” xəta səhifəsinə aparır",
+            "Keçid {url} ünvanına aparır və bu ünvan HTTP {status} qaytarır.",
+            "Keçidi düzgün ünvana yeniləyin və ya apardığı səhifəni bərpa edin.",
+        ),
+        "ru": Message(
+            "«{text}» ведёт на страницу ошибки",
+            "Ссылка ведёт на {url}, а этот адрес отвечает HTTP {status}.",
+            "Исправьте адрес ссылки или восстановите страницу, на которую она ведёт.",
+        ),
+    },
+    "menu-no-close": {
+        "en": Message(
+            "“{text}” opens but will not close",
+            "Clicking it opened a menu or panel; clicking it again and pressing Escape left it "
+            "open, so visitors can get stuck with it covering the page.",
+            "Let the same control close it, close it on Escape and on outside clicks, and keep "
+            "aria-expanded in sync.",
+        ),
+        "tr": Message(
+            "“{text}” açılıyor ama kapanmıyor",
+            "Tıklayınca bir menü ya da panel açıldı; tekrar tıklamak ve Escape'e basmak onu "
+            "kapatmadı, ziyaretçi sayfayı kapatan bu panelle kalabiliyor.",
+            "Aynı kontrolle kapanmasını sağlayın, Escape ve dışarı tıklamayla kapatın, "
+            "aria-expanded değerini güncel tutun.",
+        ),
+        "az": Message(
+            "“{text}” açılır, amma bağlanmır",
+            "Klikləyəndə menyu və ya panel açıldı; yenidən klikləmək və Escape düyməsi onu "
+            "bağlamadı, ziyarətçi səhifəni örtən bu panellə qala bilər.",
+            "Eyni elementlə bağlanmasını təmin edin, Escape və kənara kliklə bağlayın, "
+            "aria-expanded dəyərini aktual saxlayın.",
+        ),
+        "ru": Message(
+            "«{text}» открывается, но не закрывается",
+            "Нажатие открыло меню или панель; повторное нажатие и Escape её не закрыли, и "
+            "посетитель может застрять с панелью поверх страницы.",
+            "Дайте тому же элементу закрывать её, закрывайте по Escape и клику снаружи, "
+            "обновляйте aria-expanded.",
+        ),
+    },
+    "dialog-no-close": {
+        "en": Message(
+            "The dialog opened by “{text}” cannot be closed",
+            "A dialog appeared after clicking it; neither Escape nor a visible close button "
+            "dismissed it.",
+            "Add a visible close button and close the dialog on Escape.",
+        ),
+        "tr": Message(
+            "“{text}” ile açılan diyalog kapatılamıyor",
+            "Tıklamadan sonra bir diyalog açıldı; ne Escape ne de görünen bir kapatma düğmesi "
+            "onu kapattı.",
+            "Görünür bir kapatma düğmesi ekleyin ve diyaloğu Escape ile kapatın.",
+        ),
+        "az": Message(
+            "“{text}” ilə açılan dialoq bağlanmır",
+            "Klikdən sonra dialoq açıldı; nə Escape, nə də görünən bağlama düyməsi onu bağladı.",
+            "Görünən bağlama düyməsi əlavə edin və dialoqu Escape ilə bağlayın.",
+        ),
+        "ru": Message(
+            "Диалог, открытый «{text}», не закрывается",
+            "После нажатия появился диалог; ни Escape, ни видимая кнопка закрытия его не закрыли.",
+            "Добавьте видимую кнопку закрытия и закрывайте диалог по Escape.",
+        ),
+    },
+    "language-partial": {
+        "en": Message(
+            "Language switch “{text}” barely changes the page",
+            "After switching, only {changed}% of the visible text changed and the page language "
+            "stayed {lang}. Visitors who chose another language still read the original.",
+            "Translate the whole page when the language changes, or link to the translated "
+            "version of the page.",
+        ),
+        "tr": Message(
+            "Dil değiştirici “{text}” sayfayı neredeyse hiç değiştirmiyor",
+            "Değiştirdikten sonra görünen metnin yalnızca %{changed} kadarı değişti ve sayfa "
+            "dili {lang} kaldı. Başka dil seçen ziyaretçi hâlâ orijinal metni okuyor.",
+            "Dil değiştiğinde tüm sayfayı çevirin ya da sayfanın çevrilmiş sürümüne bağlantı "
+            "verin.",
+        ),
+        "az": Message(
+            "Dil dəyişdirici “{text}” səhifəni demək olar ki, dəyişmir",
+            "Dəyişdikdən sonra görünən mətnin yalnız {changed}%-i dəyişdi və səhifənin dili "
+            "{lang} qaldı. Başqa dil seçən ziyarətçi hələ də orijinal mətni oxuyur.",
+            "Dil dəyişəndə bütün səhifəni tərcümə edin və ya səhifənin tərcümə olunmuş "
+            "versiyasına keçid verin.",
+        ),
+        "ru": Message(
+            "Переключатель языка «{text}» почти не меняет страницу",
+            "После переключения изменилось лишь {changed}% видимого текста, а язык страницы "
+            "остался {lang}. Посетитель, выбравший другой язык, читает исходный текст.",
+            "Переводите всю страницу при смене языка или ведите на переведённую версию страницы.",
+        ),
+    },
 }
 
 VIEWPORT_NAMES = {

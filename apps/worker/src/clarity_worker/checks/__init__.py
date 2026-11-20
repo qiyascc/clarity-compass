@@ -30,12 +30,19 @@ def run_checks(
                 if key in seen and finding.source != "check:small-tap-target":
                     continue
                 seen.add(key)
-                if finding.anchor and finding.anchor.box:
-                    box = finding.anchor.box
-                    placement = f"{box.x:.0f},{box.y:.0f},{box.width:.0f}x{box.height:.0f}"
-                    site_key = (finding.source, finding.anchor.text or "", placement)
-                    if site_key in reported:
-                        continue
-                    reported.add(site_key)
                 findings.append(finding)
-    return findings
+    return drop_reported(findings, reported)
+
+
+def drop_reported(findings: list[Finding], reported: set[SiteKey]) -> list[Finding]:
+    kept = []
+    for finding in findings:
+        if finding.anchor and finding.anchor.box:
+            box = finding.anchor.box
+            placement = f"{box.x:.0f},{box.y:.0f},{box.width:.0f}x{box.height:.0f}"
+            site_key = (finding.source, finding.anchor.text or "", placement)
+            if site_key in reported:
+                continue
+            reported.add(site_key)
+        kept.append(finding)
+    return kept
