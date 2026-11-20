@@ -90,6 +90,21 @@ class SimulationError(Exception):
     pass
 
 
+ANIMATIONS_DONE = """() => document.getAnimations().every((animation) => {
+  const timing = animation.effect?.getComputedTiming();
+  return animation.playState !== 'running' || !timing || timing.iterations === Infinity;
+})"""
+
+
+async def settle(page: Page) -> None:
+    """Waits for the network and for intro animations, such as loaders, to finish."""
+    with contextlib.suppress(PlaywrightError):
+        await page.wait_for_load_state("networkidle", timeout=4_000)
+    with contextlib.suppress(PlaywrightError):
+        await page.wait_for_function(ANIMATIONS_DONE, timeout=8_000, polling=250)
+    await page.wait_for_timeout(300)
+
+
 @dataclass(frozen=True)
 class Frame:
     screenshot: bytes
@@ -140,8 +155,7 @@ class FixSimulator:
                 await sign_in(context, login)
             page = await context.new_page()
             await page.goto(finding.page_url, wait_until="load", timeout=30_000)
-            with contextlib.suppress(PlaywrightError):
-                await page.wait_for_load_state("networkidle", timeout=4_000)
+            await settle(page)
             anchor = finding.anchor
             found = await page.evaluate(
                 MARK_TARGET, [anchor.selector, anchor.xpath, anchor.text, MARK]
