@@ -16,6 +16,7 @@ COPY pyproject.toml uv.lock ./
 COPY packages/core/pyproject.toml packages/core/
 COPY packages/persistence/pyproject.toml packages/persistence/
 COPY packages/saliency/pyproject.toml packages/saliency/
+COPY packages/ai/pyproject.toml packages/ai/
 COPY apps/api/pyproject.toml apps/api/
 COPY apps/worker/pyproject.toml apps/worker/
 RUN uv sync --frozen --no-dev --no-install-workspace --package clarity-worker
@@ -23,6 +24,7 @@ RUN uv sync --frozen --no-dev --no-install-workspace --package clarity-worker
 COPY packages/core packages/core
 COPY packages/persistence packages/persistence
 COPY packages/saliency packages/saliency
+COPY packages/ai packages/ai
 COPY apps/worker apps/worker
 RUN uv sync --frozen --no-dev --package clarity-worker
 RUN /app/.venv/bin/python -m clarity_saliency fetch /app/models
