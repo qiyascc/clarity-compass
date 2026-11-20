@@ -24,7 +24,31 @@ Nothing has to be installed on the audited site.
 
 ## Status
 
-Early development. See [docs/roadmap.md](docs/roadmap.md).
+Early development. See [docs/roadmap.md](docs/roadmap.md) and
+[docs/architecture.md](docs/architecture.md).
+
+## Development
+
+Requirements: Python 3.12 with [uv](https://docs.astral.sh/uv/), Node 24 with
+pnpm, PostgreSQL 16.
+
+```sh
+cp .env.example .env            # fill in database URLs and secrets
+make sync
+uv run playwright install chromium
+make build                      # probe bundles and the panel
+(cd packages/persistence && uv run alembic upgrade head)
+
+uv run uvicorn clarity_api.main:app --port 8000
+uv run python -m clarity_worker
+pnpm --filter @clarity-compass/panel dev
+```
+
+`make check` runs linters, type checkers and all tests.
+
+## Deployment
+
+Docker Compose on a single host. See [docs/deployment.md](docs/deployment.md).
 
 ## License
 
