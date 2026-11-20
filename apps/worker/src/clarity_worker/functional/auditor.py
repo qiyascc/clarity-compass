@@ -9,6 +9,7 @@ from playwright.async_api import APIRequestContext, Page
 from playwright.async_api import Error as PlaywrightError
 
 from clarity_core.domain.findings import (
+    Box,
     Category,
     ElementAnchor,
     Evidence,
@@ -17,7 +18,7 @@ from clarity_core.domain.findings import (
     Severity,
     Status,
 )
-from clarity_core.domain.probe import PageProbe, ProbedElement
+from clarity_core.domain.probe import PageProbe, ProbedElement, ProbedField, ProbedForm
 from clarity_core.domain.viewport import Viewport
 from clarity_core.net.guard import AddressGuard, UnsafeTargetError
 from clarity_core.net.urls import same_site
@@ -28,6 +29,18 @@ from clarity_worker.functional.observe import PageWatcher, Snapshot, changed_sha
 from clarity_worker.probe import run_probe
 from clarity_worker.store import ArtifactStore
 
+SEARCH_QUERY = "test"
+SEARCH_NAMES = re.compile(r"^(q|s|query|search|keyword|keywords|term|axtar|ara|поиск)$", re.I)
+SUBMIT = "button[type=submit], input[type=submit], button:not([type])"
+IN_FORMS = """(selectors) => selectors.filter((selector) => {
+  try {
+    return Boolean(document.querySelector(selector)?.closest('form'));
+  } catch {
+    return false;
+  }
+})"""
+INVALID_FIELDS = """(selector) => document.querySelector(selector)
+  ?.querySelectorAll(':invalid, [aria-invalid=true]').length ?? 0"""
 TARGET_EXISTS = "(id) => Boolean(document.getElementById(id) || document.getElementsByName(id)[0])"
 SETTLE_MS = 700
 DISMISS_POLLS = 5
@@ -132,7 +145,12 @@ class FunctionalAuditor:
             probe = await run_probe(page)
             findings = await self._links(context.context.request, probe, context.viewport)
             findings += await self._anchors(page, watcher, probe, context.viewport)
-            findings += await self._controls(page, watcher, probe, url, context.viewport)
+            in_forms = await page.evaluate(IN_FORMS, [e.selector for e in probe.elements])
+            findings += await self._controls(
+                page, watcher, probe, url, context.viewport, set(in_forms)
+            )
+            if not context.viewport.is_mobile:
+                findings += await self._forms(page, watcher, probe, url, context.viewport)
             return findings
         finally:
             await page.close()
@@ -232,10 +250,13 @@ class FunctionalAuditor:
         probe: PageProbe,
         url: str,
         viewport: Viewport,
+        in_forms: set[str],
     ) -> list[Finding]:
         findings: list[Finding] = []
         actions = 0
         for element in _controls(probe):
+            if element.selector in in_forms:
+                continue
             if actions >= self.max_actions:
                 break
             if viewport.is_mobile and not _looks_like_toggle(element):
@@ -320,6 +341,144 @@ class FunctionalAuditor:
                 await self._open(page, url)
                 watcher.mark()
         return findings
+
+    async def _forms(
+        self,
+        page: Page,
+        watcher: PageWatcher,
+        probe: PageProbe,
+        url: str,
+        viewport: Viewport,
+    ) -> list[Finding]:
+        findings: list[Finding] = []
+        for form in probe.forms:
+            fields = [item for item in form.fields if item.type not in {"checkbox", "radio"}]
+            if not fields or any(item.sensitive for item in form.fields):
+                continue
+            search = _search_field(form)
+            if search is not None and form.method == "get":
+                finding = await self._search(page, watcher, form, search, probe.url, viewport)
+            elif form.method == "post":
+                finding = await self._empty_submit(page, watcher, form, probe.url, viewport)
+            else:
+                continue
+            if finding:
+                findings.append(finding)
+            await self._open(page, url)
+            watcher.mark()
+        return findings
+
+    async def _search(
+        self,
+        page: Page,
+        watcher: PageWatcher,
+        form: ProbedForm,
+        field: ProbedField,
+        page_url: str,
+        viewport: Viewport,
+    ) -> Finding | None:
+        trace = Trace(page_url, viewport.value, form.selector, form.submit_text or "search")
+        try:
+            before = await watcher.snapshot()
+            watcher.mark()
+            await page.locator(field.selector).first.fill(SEARCH_QUERY, timeout=CLICK_TIMEOUT_MS)
+            await page.locator(field.selector).first.press("Enter", timeout=CLICK_TIMEOUT_MS)
+            await page.wait_for_timeout(SETTLE_MS * 2)
+            after = await watcher.snapshot()
+        except PlaywrightError as exc:
+            trace.note("search", skipped=str(exc).splitlines()[0][:200])
+            return None
+        activity = watcher.mark()
+        outcome = Outcome(before, after, activity.requests, activity.errors, activity.popups)
+        trace.note(f"type “{SEARCH_QUERY}” and press Enter", **outcome.summary())
+        typing_only = after.mutations - before.mutations <= 2
+        if outcome.navigated or outcome.requests or not typing_only or outcome.popups:
+            return None
+        return await self._form_finding(
+            "search-no-effect", Severity.HIGH, form, trace, page_url, viewport, query=SEARCH_QUERY
+        )
+
+    async def _empty_submit(
+        self,
+        page: Page,
+        watcher: PageWatcher,
+        form: ProbedForm,
+        page_url: str,
+        viewport: Viewport,
+    ) -> Finding | None:
+        trace = Trace(page_url, viewport.value, form.selector, form.submit_text or "form")
+        submit = page.locator(form.selector).first.locator(SUBMIT).first
+        try:
+            if not await submit.count():
+                return None
+            before = await watcher.snapshot()
+            watcher.mark()
+            await submit.click(timeout=CLICK_TIMEOUT_MS, no_wait_after=True)
+            await page.wait_for_timeout(SETTLE_MS)
+            after = await watcher.snapshot()
+            invalid = await page.evaluate(INVALID_FIELDS, form.selector)
+        except PlaywrightError as exc:
+            trace.note("submit", skipped=str(exc).splitlines()[0][:200])
+            return None
+        activity = watcher.mark()
+        sent = [request for request in activity.requests if not request.startswith("GET ")]
+        trace.note(
+            "submit with every field empty",
+            sent=sent[:3],
+            invalid_fields=invalid,
+            dom_changes=after.mutations - before.mutations,
+        )
+        if not sent or invalid:
+            return None
+        return await self._form_finding(
+            "form-accepts-empty",
+            Severity.MEDIUM,
+            form,
+            trace,
+            page_url,
+            viewport,
+            extra=[
+                Evidence(kind=EvidenceKind.NETWORK, ref=sent[0], summary="blocked by the auditor")
+            ],
+            form=form.submit_text or "form",
+        )
+
+    async def _form_finding(
+        self,
+        rule: str,
+        severity: Severity,
+        target: ProbedForm,
+        trace: Trace,
+        page_url: str,
+        viewport: Viewport,
+        extra: list[Evidence] | None = None,
+        **values: object,
+    ) -> Finding:
+        element = ProbedElement(
+            index=-1,
+            tag="form",
+            role="form",
+            name=target.submit_text or "",
+            text="",
+            selector=target.selector,
+            xpath="",
+            box=target.fields[0].box if target.fields else Box(x=0, y=0, width=0, height=0),
+            visible=True,
+            above_fold=False,
+            position="static",
+            interactive=False,
+            href=None,
+            disabled=False,
+            font_size=0,
+            font_weight=400,
+            color=None,
+            background=None,
+            contrast=None,
+            background_image=False,
+        )
+        return await self._finding(
+            rule, severity, element, trace, page_url, viewport, extra, **values
+        )
 
     async def _click(
         self, page: Page, watcher: PageWatcher, element: ProbedElement, trace: Trace
@@ -463,3 +622,15 @@ def _is_language_switch(element: ProbedElement) -> bool:
 def _label(element: ProbedElement) -> str:
     text = " ".join((element.name or element.text or element.tag).split())
     return text if len(text) <= 60 else f"{text[:59]}…"
+
+
+def _search_field(form: ProbedForm) -> ProbedField | None:
+    for candidate in form.fields:
+        label = f"{candidate.name or ''} {candidate.label or ''}".strip()
+        if (
+            candidate.type == "search"
+            or SEARCH_NAMES.match(candidate.name or "")
+            or "search" in label.lower()
+        ):
+            return candidate
+    return None
