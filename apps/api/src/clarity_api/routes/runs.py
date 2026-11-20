@@ -62,6 +62,10 @@ async def list_pages(run_id: uuid.UUID, db: Session, _: CurrentUser) -> list[Pag
     return [PageOut.of(page) for page in await RunRepository(db).pages(run_id)]
 
 
+class FindingOut(Finding):
+    page_id: uuid.UUID | None
+
+
 @router.get("/runs/{run_id}/findings")
 async def list_findings(
     run_id: uuid.UUID,
@@ -70,9 +74,12 @@ async def list_findings(
     category: Annotated[list[Category] | None, Query()] = None,
     severity: Annotated[list[Severity] | None, Query()] = None,
     finding_status: Annotated[Status | None, Query(alias="status")] = None,
-) -> list[Finding]:
+) -> list[FindingOut]:
     await load_run(db, run_id)
-    findings = [Finding.model_validate(r.data) for r in await RunRepository(db).findings(run_id)]
+    findings = [
+        FindingOut.model_validate({**record.data, "page_id": record.page_id})
+        for record in await RunRepository(db).findings(run_id)
+    ]
     selected = [
         finding
         for finding in findings

@@ -94,10 +94,12 @@ async def test_pages_and_findings(client: AsyncClient, app: FastAPI) -> None:
     pages = (await client.get(f"/api/runs/{run_id}/pages")).json()
     assert pages[0]["viewport"] == "mobile"
     assert pages[0]["predictions"] is None
+    assert pages[0]["review"] is None
     assert pages[0]["capture"]["final_url"] == "https://qiyas.cc/"
 
     ordered = (await client.get(f"/api/runs/{run_id}/findings")).json()
     assert [item["severity"] for item in ordered] == ["critical", "medium", "low"]
+    assert {item["page_id"] for item in ordered} == {str(page.id)}
 
     ux = (await client.get(f"/api/runs/{run_id}/findings", params={"category": "ux"})).json()
     assert {item["category"] for item in ux} == {"ux"}
