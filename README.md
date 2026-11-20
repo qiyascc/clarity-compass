@@ -48,11 +48,13 @@ pnpm --filter @clarity-compass/panel dev
 
 ## Browser extension
 
-`apps/extension` builds an unpacked Chrome extension (`pnpm --filter
-@clarity-compass/extension build`, then load `apps/extension/dist`). Generate a
-key on the site's page in the panel, enter the panel address and the key in the
-extension and open the site: heatmap, predicted clicks and notes appear on the
-real pages as you browse them.
+`apps/extension` is a Chrome extension (Edge and Brave load it too). A deployed
+panel serves it as a zip and walks through the install on its Extension page;
+from source, run `pnpm --filter @clarity-compass/extension build` and load
+`apps/extension/dist` as an unpacked extension. Generate a key on the site's
+page in the panel, enter the panel address and the key in the extension and
+open the site: heatmap, predicted clicks and notes appear on the real pages as
+you browse them.
 
 ## Deployment
 

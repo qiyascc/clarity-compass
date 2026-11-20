@@ -3,6 +3,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { Replay } from "./replay/Replay";
+import { ExtensionGuide } from "./routes/ExtensionGuide";
 import { Layout } from "./routes/Layout";
 import { Login } from "./routes/Login";
 import { ReportView } from "./routes/ReportView";
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       { index: true, element: <Sites /> },
+      { path: "extension", element: <ExtensionGuide /> },
       { path: "sites/:siteId", element: <SiteDetail /> },
       { path: "runs/:runId", element: <RunDetail /> },
       { path: "runs/:runId/pages/:pageId", element: <Replay /> },
