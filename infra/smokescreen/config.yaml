@@ -1,0 +1,14 @@
+ip: 0.0.0.0
+port: 4750
+connect_timeout: 15s
+exit_timeout: 60s
+allow_missing_role: true
+deny_ranges:
+  - 0.0.0.0/8
+  - 100.64.0.0/10
+  - 169.254.0.0/16
+  - 198.18.0.0/15
+  - 224.0.0.0/4
+  - 240.0.0.0/4
+  - fc00::/7
+  - fe80::/10
