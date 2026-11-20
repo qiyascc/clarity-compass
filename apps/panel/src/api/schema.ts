@@ -197,6 +197,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/runs/{run_id}/report": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Report */
+        get: operations["get_report_api_runs__run_id__report_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runs/{run_id}/pages": {
         parameters: {
             query?: never;
@@ -467,6 +484,79 @@ export interface components {
             elements?: components["schemas"]["ElementPrediction"][];
             /** Models */
             models?: string[];
+        };
+        /** PageSummary */
+        PageSummary: {
+            /** Url */
+            url: string;
+            /** Kind */
+            kind?: string | null;
+            /** Purpose */
+            purpose?: string | null;
+            /** Overall */
+            overall?: string | null;
+            /** Scores */
+            scores?: {
+                [key: string]: number;
+            };
+            /**
+             * Findings
+             * @default 0
+             */
+            findings: number;
+            /**
+             * Critical
+             * @default 0
+             */
+            critical: number;
+        };
+        /** Priority */
+        Priority: {
+            /** Title */
+            title: string;
+            /** Why */
+            why: string;
+            /** Action */
+            action: string;
+            /** Impact */
+            impact: string;
+            /** Effort */
+            effort: string;
+            /** Finding Ids */
+            finding_ids?: string[];
+        };
+        /** Report */
+        Report: {
+            /** Scores */
+            scores: {
+                [key: string]: number;
+            };
+            /** Totals */
+            totals: {
+                [key: string]: number;
+            };
+            /** By Severity */
+            by_severity: {
+                [key: string]: number;
+            };
+            /** By Category */
+            by_category: {
+                [key: string]: number;
+            };
+            /** Verified */
+            verified: number;
+            /** Predicted */
+            predicted: number;
+            /** Pages */
+            pages: components["schemas"]["PageSummary"][];
+            /** Top Findings */
+            top_findings: string[];
+            /** Assessment */
+            assessment?: string | null;
+            /** Strengths */
+            strengths?: string[];
+            /** Priorities */
+            priorities?: components["schemas"]["Priority"][];
         };
         /** RunOut */
         RunOut: {
@@ -1074,6 +1164,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RunOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_report_api_runs__run_id__report_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                run_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Report"];
                 };
             };
             /** @description Validation Error */

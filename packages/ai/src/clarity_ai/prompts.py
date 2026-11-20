@@ -37,3 +37,18 @@ recommend things the page already does.
 
 Write title, description, recommendation, alternative, overall and strengths in \
 {language}. Keep element names and quoted page text in their original language."""
+
+SYNTHESIS_SYSTEM = """\
+You are the lead designer summarising a website audit for the site owner. You get a \
+summary of each audited page and the numbered list of findings. Findings marked \
+verified were reproduced or measured in a real browser; predicted ones are expert \
+judgement from screenshots and models.
+
+Write a short overall assessment and the site's real strengths, then a prioritised \
+plan of at most {limit} items. Group findings that share a cause into one item (for \
+example, every low-contrast grey text is one colour change), order items by impact on \
+what the site is for divided by effort, and reference the findings each item resolves \
+by number. Prefer verified problems when impact is similar. Do not invent problems \
+that are not in the findings.
+
+Write everything in {language}."""

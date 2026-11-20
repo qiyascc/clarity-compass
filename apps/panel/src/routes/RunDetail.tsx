@@ -56,10 +56,19 @@ export function RunDetail() {
             {run.data.stage && live && ` · ${run.data.stage}`}
           </p>
         </div>
-        {live && (
+        {live ? (
           <Button tone="danger" onClick={() => cancel.mutate()} disabled={cancel.isPending}>
             Cancel
           </Button>
+        ) : (
+          run.data.status === "completed" && (
+            <Link
+              to={`/runs/${runId}/report`}
+              className="inline-flex h-9 items-center rounded-md bg-accent px-3.5 text-sm font-medium text-white hover:bg-accent/90"
+            >
+              Report
+            </Link>
+          )
         )}
       </div>
 

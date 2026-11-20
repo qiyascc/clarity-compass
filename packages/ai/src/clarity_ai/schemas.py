@@ -76,3 +76,18 @@ class DesignReview(BaseModel):
     strengths: list[str]
     scores: Scores
     notes: list[ReviewNote]
+
+
+class PriorityItem(BaseModel):
+    title: str
+    why: str = Field(description="What it costs the site today, in one or two sentences.")
+    action: str = Field(description="The concrete change to make.")
+    impact: Literal["high", "medium", "low"]
+    effort: Literal["small", "medium", "large"]
+    findings: list[int] = Field(description="Numbers of the findings this item resolves.")
+
+
+class SiteAssessment(BaseModel):
+    assessment: str = Field(description="One paragraph on the overall experience of the site.")
+    strengths: list[str]
+    priorities: list[PriorityItem]

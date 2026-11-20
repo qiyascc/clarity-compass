@@ -63,6 +63,7 @@ class Run(Timestamped, Base):
     stage: Mapped[str | None] = mapped_column(String(40))
     progress: Mapped[dict[str, Any]] = mapped_column(default=dict)
     error: Mapped[str | None] = mapped_column(Text)
+    report: Mapped[dict[str, Any] | None]
     started_at: Mapped[datetime | None]
     finished_at: Mapped[datetime | None]
 

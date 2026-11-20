@@ -3,6 +3,24 @@
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Contact - BugFarm Estates</title><link rel="stylesheet" href="/style.css"></head>
 <body>
   <header><strong>BugFarm Estates</strong><nav><a href="/">Home</a><a href="/listings/">Listings</a></nav></header>
-  <main><section><h1>Contact</h1></section></main>
+  <main><section><h1>Contact</h1>
+    <button id="site-menu" type="button" aria-expanded="false" aria-controls="menu">Menu</button>
+  </section></main>
+  <div id="menu" role="dialog" aria-label="Site menu"
+       style="position:fixed;inset:0;background:#111;color:#fff;clip-path:inset(0 0 100%);visibility:hidden;transition:clip-path .8s,visibility 0s .8s">
+    <a href="/listings/">Listings</a>
+  </div>
+  <script>
+    const trigger = document.getElementById("site-menu");
+    const menu = document.getElementById("menu");
+    const setOpen = (open) => {
+      trigger.setAttribute("aria-expanded", String(open));
+      menu.style.transition = open ? "clip-path .8s" : "clip-path .8s, visibility 0s .8s";
+      menu.style.clipPath = open ? "inset(0)" : "inset(0 0 100%)";
+      menu.style.visibility = open ? "visible" : "hidden";
+    };
+    trigger.addEventListener("click", () => setOpen(trigger.getAttribute("aria-expanded") !== "true"));
+    document.addEventListener("keydown", (event) => event.key === "Escape" && setOpen(false));
+  </script>
 </body>
 </html>

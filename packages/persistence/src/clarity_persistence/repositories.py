@@ -80,6 +80,10 @@ class RunRepository:
         run.progress = {**run.progress, **progress}
         await self.session.flush()
 
+    async def save_report(self, run: Run, report: Any) -> None:
+        run.report = _dump(report)
+        await self.session.flush()
+
     async def complete(self, run: Run) -> None:
         await self._finish(run, RunStatus.COMPLETED)
 

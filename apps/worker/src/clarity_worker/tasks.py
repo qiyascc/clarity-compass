@@ -6,6 +6,7 @@ from pathlib import Path
 from playwright.async_api import ProxySettings, async_playwright
 from procrastinate import App
 
+from clarity_ai.agents import RecommendationAgent
 from clarity_ai.factory import create_provider
 from clarity_persistence.database import create_engine, session_factory
 from clarity_persistence.jobs import ANALYSIS_QUEUE, RUN_ANALYSIS, create_job_app
@@ -61,6 +62,7 @@ async def execute(settings: WorkerSettings, run_id: uuid.UUID) -> None:
                     settings.guard(),
                     predictor=PagePredictor(store, attention) if attention else None,
                     reviewer=PageReviewer(provider, store) if provider else None,
+                    recommender=RecommendationAgent(provider) if provider else None,
                 )
                 await runner.run(run_id)
             finally:

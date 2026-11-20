@@ -11,7 +11,7 @@ export function Layout() {
 
   return (
     <div className="min-h-screen">
-      <header className="border-b border-line bg-white">
+      <header className="border-b border-line bg-white print:hidden">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
           <Link to="/" className="flex items-center gap-2 font-semibold tracking-tight">
             <span className="grid size-6 place-items-center rounded-full border-2 border-accent">
@@ -31,7 +31,7 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-6 py-8">
+      <main className="mx-auto max-w-6xl px-6 py-8 print:max-w-none print:p-0">
         <Outlet />
       </main>
     </div>

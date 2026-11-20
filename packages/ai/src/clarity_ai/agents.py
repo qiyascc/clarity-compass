@@ -1,7 +1,7 @@
-from clarity_ai.context import PageContext
-from clarity_ai.prompts import DESIGN_REVIEW_SYSTEM, UNDERSTANDING_SYSTEM
+from clarity_ai.context import LANGUAGE_NAMES, PageContext
+from clarity_ai.prompts import DESIGN_REVIEW_SYSTEM, SYNTHESIS_SYSTEM, UNDERSTANDING_SYSTEM
 from clarity_ai.provider import Generated, Image, LLMProvider, Part, Prompt, Text
-from clarity_ai.schemas import DesignReview, PageUnderstanding, ReviewNote
+from clarity_ai.schemas import DesignReview, PageUnderstanding, ReviewNote, SiteAssessment
 
 MAX_NOTES = 12
 
@@ -58,6 +58,39 @@ class DesignReviewAgent:
         notes = sorted(generated.value.notes, key=_rank)[: self.max_notes]
         review = generated.value.model_copy(update={"notes": notes})
         return Generated(review, generated.model, generated.usage)
+
+
+class RecommendationAgent:
+    def __init__(self, provider: LLMProvider, *, max_items: int = 8) -> None:
+        self.provider = provider
+        self.max_items = max_items
+
+    async def run(
+        self, site: str, language: str, pages: list[str], findings: list[str]
+    ) -> Generated[SiteAssessment]:
+        system = SYNTHESIS_SYSTEM.format(
+            limit=self.max_items, language=LANGUAGE_NAMES.get(language, "English")
+        )
+        numbered = "\n".join(f"{number}. {line}" for number, line in enumerate(findings, 1))
+        prompt = Prompt(
+            system=system,
+            parts=[
+                Text(f"Site: {site}"),
+                Text("Pages:\n" + ("\n".join(pages) or "(no page reviews)")),
+                Text("Findings:\n" + (numbered or "(none)")),
+            ],
+            max_tokens=12_000,
+            effort="high",
+        )
+        generated = await self.provider.structured(prompt, SiteAssessment)
+        plan = generated.value.priorities[: self.max_items]
+        valid = range(1, len(findings) + 1)
+        cleaned = [
+            item.model_copy(update={"findings": [n for n in item.findings if n in valid]})
+            for item in plan
+        ]
+        assessment = generated.value.model_copy(update={"priorities": cleaned})
+        return Generated(assessment, generated.model, generated.usage)
 
 
 SEVERITY_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "suggestion": 4}

@@ -5,6 +5,7 @@ import { createBrowserRouter, RouterProvider } from "react-router";
 import { Replay } from "./replay/Replay";
 import { Layout } from "./routes/Layout";
 import { Login } from "./routes/Login";
+import { ReportView } from "./routes/ReportView";
 import { RunDetail } from "./routes/RunDetail";
 import { SiteDetail } from "./routes/SiteDetail";
 import { Sites } from "./routes/Sites";
@@ -23,6 +24,7 @@ const router = createBrowserRouter([
       { path: "sites/:siteId", element: <SiteDetail /> },
       { path: "runs/:runId", element: <RunDetail /> },
       { path: "runs/:runId/pages/:pageId", element: <Replay /> },
+      { path: "runs/:runId/report", element: <ReportView /> },
     ],
   },
 ]);

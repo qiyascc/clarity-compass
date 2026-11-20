@@ -15,9 +15,12 @@ WATCH = """() => {
 SNAPSHOT = """(selector) => {
   const visible = (el) => {
     const style = getComputedStyle(el);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    if (Number(style.opacity) < 0.05 || /100%/.test(style.clipPath)) return false;
+    if (el.closest('[aria-hidden=true], [inert]')) return false;
     const rect = el.getBoundingClientRect();
-    return style.display !== 'none' && style.visibility !== 'hidden'
-      && rect.width > 0 && rect.height > 0;
+    return rect.width > 0 && rect.height > 0 && rect.bottom > 0 && rect.right > 0
+      && rect.top < innerHeight && rect.left < innerWidth;
   };
   const modal = 'dialog[open], [role=dialog], [role=alertdialog], [aria-modal=true]';
   const dialogs = [...document.querySelectorAll(modal)].filter(visible).length;

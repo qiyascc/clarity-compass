@@ -7,6 +7,7 @@ from httpx import AsyncClient
 from clarity_api.queue import RecordingQueue
 from clarity_core.domain.capture import PageCapture, Section
 from clarity_core.domain.findings import Category, Finding, Severity, Status
+from clarity_core.domain.report import summarize
 from clarity_core.domain.viewport import Viewport
 from clarity_persistence.repositories import RunRepository
 
@@ -107,3 +108,20 @@ async def test_pages_and_findings(client: AsyncClient, app: FastAPI) -> None:
 
 async def test_unknown_run(client: AsyncClient) -> None:
     assert (await client.get(f"/api/runs/{uuid.uuid4()}")).status_code == 404
+
+
+async def test_report_is_served_once_written(client: AsyncClient, app: FastAPI) -> None:
+    site_id = await new_site(client)
+    run_id = (await client.post(f"/api/sites/{site_id}/runs")).json()["id"]
+    assert (await client.get(f"/api/runs/{run_id}/report")).status_code == 404
+
+    async with app.state.sessions() as db:
+        runs = RunRepository(db)
+        run = await runs.get(uuid.UUID(run_id))
+        assert run is not None
+        await runs.save_report(run, summarize([finding(Severity.HIGH)], {}))
+        await db.commit()
+
+    report = (await client.get(f"/api/runs/{run_id}/report")).json()
+    assert report["by_severity"] == {"high": 1}
+    assert report["priorities"] == []
