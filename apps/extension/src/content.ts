@@ -1,4 +1,4 @@
-import { mountOverlay, type Overlay, type OverlayData } from "@qiyascc/clarity-overlay";
+import { mountOverlay, type Overlay, type OverlayData } from "@qiyas/overlay-sdk";
 import { type Reply, type Request, viewportFor } from "./shared";
 
 declare global {

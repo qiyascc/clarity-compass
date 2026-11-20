@@ -1,4 +1,4 @@
-import { mountOverlay, type Overlay } from "@qiyascc/clarity-overlay";
+import { mountOverlay, type Overlay } from "@qiyas/overlay-sdk";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { createCache, createMirror, rebuildIntoSandboxedIframe } from "rrweb-snapshot";
