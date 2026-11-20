@@ -1,7 +1,12 @@
-import { Link, Navigate, Outlet, useLocation, useNavigate } from "react-router";
+import { Link, Navigate, NavLink, Outlet, useLocation, useNavigate } from "react-router";
 import { useLogout, useMe } from "@/api/hooks";
 import { Logo } from "@/components/Logo";
 import { Landing } from "./Landing";
+
+const NAV = [
+  { to: "/", label: "Sites" },
+  { to: "/extension", label: "Extension" },
+];
 
 export function Layout() {
   const me = useMe();
@@ -16,10 +21,26 @@ export function Layout() {
     <div className="min-h-screen">
       <header className="sticky top-0 z-20 border-b border-line bg-white/85 backdrop-blur print:hidden">
         <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-          <Link to="/">
-            <Logo />
-          </Link>
-          <div className="flex items-center gap-5 text-sm text-ink-soft">
+          <div className="flex items-center gap-5 sm:gap-8">
+            <Link to="/" aria-label="Clarity Compass">
+              <Logo compact />
+            </Link>
+            <nav className="flex items-center gap-5 text-sm">
+              {NAV.map(({ to, label }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end
+                  className={({ isActive }) =>
+                    `transition-colors ${isActive ? "font-medium text-ink" : "text-ink-soft hover:text-ink"}`
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </nav>
+          </div>
+          <div className="flex items-center gap-5 whitespace-nowrap text-sm text-ink-soft">
             <span className="hidden font-mono text-xs sm:inline">{me.data.username}</span>
             <button
               type="button"
