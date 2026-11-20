@@ -26,9 +26,12 @@ class AddressGuard:
         self,
         resolve: Resolver = system_resolve,
         allow: Iterable[IPNetwork] = (),
+        *,
+        allow_unresolved: bool = False,
     ) -> None:
         self._resolve = resolve
         self._allow = tuple(allow)
+        self._allow_unresolved = allow_unresolved
 
     def is_allowed(self, address: IPAddress) -> bool:
         if any(address in network for network in self._allow):
@@ -53,8 +56,12 @@ class AddressGuard:
         try:
             records = await self._resolve(host)
         except OSError as exc:
+            if self._allow_unresolved:
+                return []
             raise UnsafeTargetError(f"cannot resolve {host}") from exc
         if not records:
+            if self._allow_unresolved:
+                return []
             raise UnsafeTargetError(f"cannot resolve {host}")
         return [ipaddress.ip_address(record.split("%", 1)[0]) for record in records]
 
