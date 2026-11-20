@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createBrowserRouter, RouterProvider } from "react-router";
+import { Replay } from "./replay/Replay";
 import { Layout } from "./routes/Layout";
 import { Login } from "./routes/Login";
 import { RunDetail } from "./routes/RunDetail";
@@ -21,6 +22,7 @@ const router = createBrowserRouter([
       { index: true, element: <Sites /> },
       { path: "sites/:siteId", element: <SiteDetail /> },
       { path: "runs/:runId", element: <RunDetail /> },
+      { path: "runs/:runId/pages/:pageId", element: <Replay /> },
     ],
   },
 ]);

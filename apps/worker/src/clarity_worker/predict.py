@@ -45,7 +45,10 @@ class PagePredictor:
             densities.append(density)
 
         page = stitch(
-            [(s.scroll_y, d) for s, d in zip(capture.sections, densities, strict=True)],
+            [
+                (section.scroll_y, density / max(float(density.max()), 1e-12))
+                for section, density in zip(capture.sections, densities, strict=True)
+            ],
             height=capture.page_height,
             width=viewport.width,
         )
