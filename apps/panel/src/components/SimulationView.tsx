@@ -35,9 +35,7 @@ export function SimulationView({ id }: { id: string }) {
       <p className="text-sm">{result.explanation}</p>
       <p className="text-sm">
         Attention on the element: <strong>{percent(result.before.attention)}</strong> →{" "}
-        <strong className={result.change > 0 ? "text-emerald-700" : "text-critical"}>
-          {percent(result.after.attention)}
-        </strong>{" "}
+        <strong className="text-ink">{percent(result.after.attention)}</strong>{" "}
         <span className="text-ink-soft">
           (rank {result.before.rank} → {result.after.rank} of {result.after.elements})
         </span>

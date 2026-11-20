@@ -74,12 +74,12 @@ export function RunDetail() {
       </div>
 
       {run.data.error && (
-        <div className="rounded-md border border-critical/30 bg-red-50 p-4 font-mono text-xs text-critical">
+        <div className="rounded-md border border-ink bg-white p-4 font-mono text-xs text-ink">
           {run.data.error}
         </div>
       )}
       {login && !login.signed_in && (
-        <div className="rounded-md border border-medium/30 bg-amber-50 p-4 text-sm text-medium">
+        <div className="rounded-md border border-dashed border-ink-faint bg-white p-4 text-sm text-ink-soft">
           Could not sign in with the stored login ({login.reason}); pages were audited as a visitor.
         </div>
       )}
@@ -251,7 +251,7 @@ function ReviewSummary({ review }: { review: Review }) {
             <dt className="w-24 capitalize text-ink-soft">{name}</dt>
             <dd className="h-1.5 flex-1 overflow-hidden rounded bg-line">
               <div
-                className={`h-full ${score >= 70 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-critical"}`}
+                className={`h-full ${score >= 70 ? "bg-ink" : score >= 50 ? "bg-ink-soft" : "bg-ink-faint"}`}
                 style={{ width: `${score}%` }}
               />
             </dd>
