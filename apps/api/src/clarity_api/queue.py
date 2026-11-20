@@ -5,13 +5,15 @@ from typing import Protocol
 
 from procrastinate import App
 
-from clarity_persistence.jobs import ANALYSIS_QUEUE, RUN_ANALYSIS
+from clarity_persistence.jobs import ANALYSIS_QUEUE, RUN_ANALYSIS, SIMULATE_FIX
 
 
 class RunQueue(Protocol):
     def lifespan(self) -> AbstractAsyncContextManager[None]: ...
 
     async def enqueue(self, run_id: uuid.UUID) -> None: ...
+
+    async def enqueue_simulation(self, simulation_id: uuid.UUID) -> None: ...
 
 
 class JobQueue:
@@ -27,10 +29,15 @@ class JobQueue:
         task = self.app.configure_task(RUN_ANALYSIS, queue=ANALYSIS_QUEUE)
         await task.defer_async(run_id=str(run_id))
 
+    async def enqueue_simulation(self, simulation_id: uuid.UUID) -> None:
+        task = self.app.configure_task(SIMULATE_FIX, queue=ANALYSIS_QUEUE)
+        await task.defer_async(simulation_id=str(simulation_id))
+
 
 class RecordingQueue:
     def __init__(self) -> None:
         self.enqueued: list[uuid.UUID] = []
+        self.simulations: list[uuid.UUID] = []
 
     @asynccontextmanager
     async def lifespan(self) -> AsyncIterator[None]:
@@ -38,3 +45,6 @@ class RecordingQueue:
 
     async def enqueue(self, run_id: uuid.UUID) -> None:
         self.enqueued.append(run_id)
+
+    async def enqueue_simulation(self, simulation_id: uuid.UUID) -> None:
+        self.simulations.append(simulation_id)
