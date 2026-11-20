@@ -7,6 +7,11 @@ page it belongs to.
 
 Nothing has to be installed on the audited site.
 
+An open source, self-hosted alternative to Plerdy, Hotjar, Microsoft Clarity
+and Attention Insight for teams that want predicted heatmaps and an AI UX audit
+without a tracking script or real traffic. See
+[how it compares](docs/alternatives.md).
+
 ## What it does
 
 - **Explores** - Playwright drives Chromium through the site: full-height
