@@ -19,7 +19,7 @@ class WorkerSettings(BaseSettings):
 
     def guard(self) -> AddressGuard:
         networks: list[IPNetwork] = [ipaddress.ip_network(net) for net in self.allowed_networks]
-        return AddressGuard(allow=networks)
+        return AddressGuard(allow=networks, allow_unresolved=self.egress_proxy is not None)
 
 
 @cache
