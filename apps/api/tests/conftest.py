@@ -10,7 +10,7 @@ from clarity_api.app import create_app
 from clarity_api.queue import RecordingQueue
 from clarity_api.security import hash_password
 from clarity_api.settings import Settings
-from clarity_persistence.testing import recreate_tables, database_url_for_tests
+from clarity_persistence.testing import database_url_for_tests, recreate_tables
 
 PASSWORD = "correct horse battery staple"
 PASSWORD_HASH = hash_password(PASSWORD)

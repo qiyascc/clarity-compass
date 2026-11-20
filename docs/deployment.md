@@ -25,5 +25,8 @@ uv run python -m clarity_api hash-password     # CLARITY_ADMIN_PASSWORD_HASH
 docker compose -f infra/compose.yaml --env-file .env up -d --build
 ```
 
+The panel is served on `CLARITY_HTTP_PORT` (default `8080`). Put it behind a
+TLS-terminating reverse proxy and keep `CLARITY_SECURE_COOKIES=true`.
+
 `CLARITY_CREDENTIALS_KEY` encrypts stored site logins. Changing it makes
 existing credentials unreadable; re-enter them in the panel afterwards.
