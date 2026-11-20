@@ -1,12 +1,16 @@
 import uuid
 from collections.abc import AsyncIterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 from playwright.async_api import Browser
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
+from clarity_ai.provider import Generated, Prompt, ProviderError
+from clarity_ai.schemas import DesignReview, PageKind, PageUnderstanding, ReviewNote, Scores
 from clarity_core.domain.capture import PageCapture
+from clarity_core.domain.findings import Finding
 from clarity_core.domain.prediction import PagePrediction
 from clarity_core.domain.profile import AnalysisProfile, CrawlLimits, ScopeMode
 from clarity_core.domain.viewport import Viewport
@@ -16,6 +20,7 @@ from clarity_persistence.models import RunStatus
 from clarity_persistence.repositories import RunRepository, SiteRepository
 from clarity_saliency.predictor import AttentionPredictor
 from clarity_worker.predict import PagePredictor
+from clarity_worker.review import PageReviewer
 from clarity_worker.runner import AnalysisRunner
 from clarity_worker.store import LocalArtifactStore
 
@@ -167,3 +172,109 @@ async def test_failures_mark_the_run_failed(
     assert run.status is RunStatus.FAILED
     assert run.error is not None
     assert "blocked" in run.error
+
+
+class FailingProvider:
+    name = "failing"
+    model = "failing-1"
+
+    async def structured(self, prompt: object, schema: object) -> object:
+        raise ProviderError("Claude returned 529: overloaded")
+
+
+class ScriptedProvider:
+    name = "scripted"
+    model = "scripted-1"
+
+    async def structured(self, prompt: Prompt, schema: type[Any]) -> Generated[Any]:
+        if schema is PageUnderstanding:
+            return Generated(
+                PageUnderstanding(
+                    kind=PageKind.ABOUT,
+                    purpose="Introduce the agency.",
+                    audience="Buyers",
+                    primary_action=None,
+                    primary_element=None,
+                    site_language="en",
+                ),
+                self.model,
+            )
+        return Generated(
+            DesignReview(
+                overall="Thin page.",
+                strengths=[],
+                scores=Scores(visual=50, ux=50, content=30, conversion=20, accessibility=60),
+                notes=[
+                    ReviewNote(
+                        element=None,
+                        viewport="all",
+                        category="content",
+                        severity="medium",
+                        confidence=0.7,
+                        title="The about page says almost nothing",
+                        description="d",
+                        recommendation="r",
+                        alternative=None,
+                        evidence="desktop section 1",
+                    )
+                ],
+            ),
+            self.model,
+        )
+
+
+async def test_audit_stores_checks_and_design_review(
+    sessions: Sessions, browser: Browser, loopback_guard: AddressGuard, tmp_path: Path, bugfarm: str
+) -> None:
+    store = LocalArtifactStore(tmp_path)
+    runner = AnalysisRunner(
+        sessions,
+        browser,
+        store,
+        loopback_guard,
+        reviewer=PageReviewer(ScriptedProvider(), store),
+        scroll_pause_ms=50,
+    )
+    run_id = await queue_run(
+        sessions, AnalysisProfile(start_url=f"{bugfarm}/", scope=ScopeMode.SINGLE)
+    )
+    await runner.run(run_id)
+
+    async with sessions() as db:
+        runs = RunRepository(db)
+        run = await runs.get(run_id)
+        findings = [Finding.model_validate(record.data) for record in await runs.findings(run_id)]
+        pages = await runs.pages(run_id)
+    assert run is not None
+    assert run.status is RunStatus.COMPLETED
+    assert run.progress["audited"] == 1
+    sources = {finding.source for finding in findings}
+    assert {"check:console-errors", "check:broken-image", "agent:ux-designer"} <= sources
+    lead = next(page for page in pages if page.viewport == "desktop")
+    assert lead.review is not None
+    assert lead.review["understanding"]["kind"] == "about"
+    assert lead.review["scores"]["content"] == 30
+
+
+async def test_review_failures_do_not_fail_the_run(
+    sessions: Sessions, browser: Browser, loopback_guard: AddressGuard, tmp_path: Path, bugfarm: str
+) -> None:
+    store = LocalArtifactStore(tmp_path)
+    runner = AnalysisRunner(
+        sessions,
+        browser,
+        store,
+        loopback_guard,
+        reviewer=PageReviewer(FailingProvider(), store),  # type: ignore[arg-type]
+        scroll_pause_ms=50,
+    )
+    run_id = await queue_run(
+        sessions, AnalysisProfile(start_url=f"{bugfarm}/about.html", scope=ScopeMode.SINGLE)
+    )
+    await runner.run(run_id)
+
+    async with sessions() as db:
+        run = await RunRepository(db).get(run_id)
+    assert run is not None
+    assert run.status is RunStatus.COMPLETED
+    assert "overloaded" in run.progress["review_errors"][0]

@@ -51,6 +51,11 @@ services:
       <<: *app-env
       CLARITY_EGRESS_PROXY: http://egress:4750
       CLARITY_CONCURRENCY: ${CLARITY_CONCURRENCY:-1}
+      CLARITY_AI_PROVIDER: ${CLARITY_AI_PROVIDER:-anthropic}
+      CLARITY_AI_MODEL: ${CLARITY_AI_MODEL:-}
+      CLARITY_AI_BASE_URL: ${CLARITY_AI_BASE_URL:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
       HTTPS_PROXY: http://egress:4750
       NO_PROXY: postgres,localhost,127.0.0.1
     volumes:

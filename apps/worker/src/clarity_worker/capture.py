@@ -11,6 +11,7 @@ from clarity_worker.probe import run_probe, take_snapshot
 from clarity_worker.store import ArtifactStore
 
 MAX_FULL_PAGE_HEIGHT = 16_000
+MAX_SECTIONS = 40
 
 
 class CaptureError(Exception):
@@ -156,7 +157,9 @@ class PageCapturer:
             key = await self.store.put(f"{slug}/section-{index:02d}.png", shot)
             visible = min(step, page_height - scroll_y)
             sections.append(Section(index=index, scroll_y=scroll_y, height=visible, screenshot=key))
-            if scroll_y + step >= page_height:
+            if scroll_y + step >= page_height or len(sections) >= MAX_SECTIONS:
+                break
+            if index and scroll_y <= sections[-2].scroll_y:
                 break
             offset = scroll_y + step
         if sections:

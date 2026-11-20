@@ -85,6 +85,7 @@ class PageOut(BaseModel):
     title: str
     capture: dict[str, Any]
     predictions: PagePrediction | None
+    review: dict[str, Any] | None
 
     @classmethod
     def of(cls, page: PageRecord) -> "PageOut":

@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useParams } from "react-router";
 import type { Page } from "@/api/client";
 import { isActive, useCancelRun, useFindings, usePages, useRun } from "@/api/hooks";
+import { Findings } from "@/components/Findings";
 import { HeatImage } from "@/components/HeatImage";
 import { StatusBadge } from "@/components/StatusBadge";
 import { Button, Card, ErrorText } from "@/components/ui";
@@ -78,22 +79,7 @@ export function RunDetail() {
       )}
 
       <Card title={`Findings${findings.data ? ` (${findings.data.length})` : ""}`}>
-        {findings.data?.length === 0 ? (
-          <p className="text-sm text-ink-soft">No findings yet.</p>
-        ) : (
-          <ul className="divide-y divide-line">
-            {findings.data?.map((finding) => (
-              <li key={finding.id} className="space-y-1 py-3">
-                <div className="flex items-center gap-2">
-                  <StatusBadge value={finding.severity} />
-                  <StatusBadge value={finding.status} />
-                  <span className="text-sm font-medium">{finding.title}</span>
-                </div>
-                <p className="text-sm text-ink-soft">{finding.description}</p>
-              </li>
-            ))}
-          </ul>
-        )}
+        <Findings runId={runId} findings={findings.data ?? []} />
       </Card>
 
       <div className="space-y-4">
@@ -113,6 +99,7 @@ function PageCard({ runId, url, captures }: { runId: string; url: string; captur
   if (!page) return null;
   const capture = page.capture as unknown as Capture;
   const prediction = page.predictions;
+  const review = (captures[0]?.review ?? null) as Review | null;
   const attentionKey = (index: number) => {
     const key = prediction?.sections.find((section) => section.index === index)?.combined;
     return key ? artifact(key) : undefined;
@@ -176,6 +163,7 @@ function PageCard({ runId, url, captures }: { runId: string; url: string; captur
         <Stat label="Blocked" value={capture.blocked_requests.length} />
         {prediction && <Stat label="Model agreement" value={prediction.agreement.toFixed(2)} />}
       </dl>
+      {review && <ReviewSummary review={review} />}
       <div className="flex gap-3 overflow-x-auto pb-2">
         {capture.sections.map((section) => (
           <a
@@ -215,6 +203,48 @@ function PageCard({ runId, url, captures }: { runId: string; url: string; captur
         </div>
       )}
     </Card>
+  );
+}
+
+interface Review {
+  understanding: { kind: string; purpose: string; primary_action: string | null };
+  overall: string;
+  strengths: string[];
+  scores: Record<string, number>;
+}
+
+function ReviewSummary({ review }: { review: Review }) {
+  return (
+    <div className="mb-4 grid gap-4 rounded-md bg-paper p-4 md:grid-cols-[1fr_220px]">
+      <div className="space-y-1.5 text-sm">
+        <p>
+          <span className="rounded bg-white px-1.5 py-0.5 text-xs font-medium capitalize">
+            {review.understanding.kind.replace("_", " ")}
+          </span>{" "}
+          <span className="text-ink-soft">{review.understanding.purpose}</span>
+        </p>
+        {review.understanding.primary_action && (
+          <p className="text-xs text-ink-soft">
+            Primary action: {review.understanding.primary_action}
+          </p>
+        )}
+        <p>{review.overall}</p>
+      </div>
+      <dl className="space-y-1">
+        {Object.entries(review.scores).map(([name, score]) => (
+          <div key={name} className="flex items-center gap-2 text-xs">
+            <dt className="w-24 capitalize text-ink-soft">{name}</dt>
+            <dd className="h-1.5 flex-1 overflow-hidden rounded bg-line">
+              <div
+                className={`h-full ${score >= 70 ? "bg-emerald-500" : score >= 50 ? "bg-amber-500" : "bg-critical"}`}
+                style={{ width: `${score}%` }}
+              />
+            </dd>
+            <span className="w-7 text-right font-mono">{score}</span>
+          </div>
+        ))}
+      </dl>
+    </div>
   );
 }
 

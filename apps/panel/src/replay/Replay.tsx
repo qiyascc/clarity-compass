@@ -1,6 +1,6 @@
 import { mountOverlay, type Overlay } from "@qiyascc/clarity-overlay";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router";
 import { createCache, createMirror, rebuildIntoSandboxedIframe } from "rrweb-snapshot";
 import { api, type Page } from "@/api/client";
 import { useFindings, usePages } from "@/api/hooks";
@@ -23,9 +23,10 @@ const finalUrl = (page: Page) => (page.capture as { final_url: string }).final_u
 export function Replay() {
   const { runId = "", pageId = "" } = useParams();
   const navigate = useNavigate();
+  const [search] = useSearchParams();
+  const focus = search.get("note");
   const pages = usePages(runId, false);
   const findings = useFindings(runId);
-  const stage = useRef<HTMLDivElement>(null);
   const host = useRef<HTMLDivElement>(null);
   const frame = useRef<HTMLIFrameElement | null>(null);
   const overlay = useRef<Overlay | null>(null);
@@ -41,15 +42,17 @@ export function Replay() {
   );
   const viewport = page ? viewportOf(page) : { width: 1440, height: 900 };
 
-  useEffect(() => {
-    const element = stage.current;
-    if (!element) return;
-    const resize = () => setScale(Math.min(1, (element.clientWidth - 32) / viewport.width));
-    resize();
-    const observer = new ResizeObserver(resize);
-    observer.observe(element);
-    return () => observer.disconnect();
-  }, [viewport.width, page?.id]);
+  const observeStage = useCallback(
+    (element: HTMLDivElement | null) => {
+      if (!element) return;
+      const resize = () => setScale(Math.min(1, (element.clientWidth - 32) / viewport.width));
+      resize();
+      const observer = new ResizeObserver(resize);
+      observer.observe(element);
+      return () => observer.disconnect();
+    },
+    [viewport.width],
+  );
 
   useEffect(() => {
     if (frame.current) frame.current.style.transform = `scale(${scale})`;
@@ -96,6 +99,7 @@ export function Replay() {
         if (!doc) return;
         doc.addEventListener("click", openLink);
         overlay.current = mountOverlay(toOverlayData(page, notes), { document: doc, loadImage });
+        if (focus) overlay.current.focusNote(focus);
       })
       .catch((reason: unknown) => {
         if (!cancelled) setError(reason);
@@ -108,7 +112,7 @@ export function Replay() {
       frame.current = null;
       root.replaceChildren();
     };
-  }, [page, pages.data, findings.data, navigate, runId]);
+  }, [page, pages.data, findings.data, navigate, runId, focus]);
 
   if (pages.isPending) return null;
   if (!page) return <ErrorText error={pages.error ?? "Page not found"} />;
@@ -138,7 +142,7 @@ export function Replay() {
         </div>
       </div>
       <ErrorText error={error} />
-      <div ref={stage} className="rounded-lg border border-line bg-white p-4">
+      <div ref={observeStage} className="rounded-lg border border-line bg-white p-4">
         <div
           className="mx-auto overflow-hidden rounded border border-line"
           style={{ width: viewport.width * scale, height: viewport.height * scale }}

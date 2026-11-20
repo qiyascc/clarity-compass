@@ -9,5 +9,5 @@
   {"id": "partial-translation", "page": "/", "selector": "#lang", "category": "functional"},
   {"id": "console-error-on-load", "page": "/", "selector": null, "category": "functional"},
   {"id": "contact-cta-far-from-price", "page": "/listings/1.html", "selector": "a.btn", "category": "ux"},
-  {"id": "missing-alt-text", "page": "/listings/1.html", "selector": "img[alt='']", "category": "accessibility"}
+  {"id": "missing-alt-text", "page": "/listings/1.html", "selector": "img:not([alt])", "category": "accessibility"}
 ]

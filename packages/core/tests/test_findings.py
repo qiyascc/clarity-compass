@@ -48,10 +48,16 @@ def test_verified_finding_requires_evidence() -> None:
         finding(status=Status.VERIFIED)
 
 
-def test_verified_functional_finding_requires_action_trace() -> None:
+def test_verified_functional_finding_requires_observed_failure() -> None:
     screenshot = Evidence(kind=EvidenceKind.SCREENSHOT, ref="shots/1.png")
     with pytest.raises(ValidationError, match="action trace"):
         finding(category=Category.FUNCTIONAL, status=Status.VERIFIED, evidence=[screenshot])
+
+
+def test_observed_network_failure_verifies_a_functional_finding() -> None:
+    response = Evidence(kind=EvidenceKind.NETWORK, ref="GET /img/missing.jpg 404")
+    result = finding(category=Category.FUNCTIONAL, status=Status.VERIFIED, evidence=[response])
+    assert result.is_verified
 
 
 def test_verified_functional_finding_with_trace_is_accepted() -> None:
