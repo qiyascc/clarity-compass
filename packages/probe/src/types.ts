@@ -74,6 +74,8 @@ export interface PageProbe {
   viewportMeta: string | null;
   viewport: { width: number; height: number };
   documentHeight: number;
+  documentWidth: number;
+  overflowing: string[];
   headings: Heading[];
   elements: ProbedElement[];
   images: ProbedImage[];

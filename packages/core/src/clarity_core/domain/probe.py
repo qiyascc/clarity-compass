@@ -80,6 +80,8 @@ class PageProbe(_Probe):
     viewport_meta: str | None
     viewport: ViewportSize
     document_height: int
+    document_width: int = 0
+    overflowing: list[str] = Field(default_factory=list)
     headings: list[Heading] = Field(default_factory=list)
     elements: list[ProbedElement] = Field(default_factory=list)
     images: list[ProbedImage] = Field(default_factory=list)

@@ -339,6 +339,99 @@ CATALOG: dict[str, dict[str, Message]] = {
             "и кэшируйте статику.",
         ),
     },
+    "horizontal-overflow": {
+        "en": Message(
+            "The page scrolls sideways on {viewport}",
+            "The page is {width}px wide on a {viewport} screen of {screen}px, so visitors can "
+            "drag it sideways and content gets cut off. The widest element starts here: {culprit}.",
+            "Constrain that element with max-width: 100%, let tables and code scroll inside their "
+            "own container, and avoid fixed widths wider than the screen.",
+        ),
+        "tr": Message(
+            "Sayfa {viewport} görünümünde yana kayıyor",
+            "{screen}px genişliğindeki {viewport} ekranda sayfa {width}px genişliğinde; ziyaretçi "
+            "sayfayı yana sürükleyebiliyor ve içerik kesiliyor. En geniş öğe burada: {culprit}.",
+            "Bu öğeyi max-width: 100% ile sınırlayın, tabloları ve kodu kendi kapsayıcısında "
+            "kaydırın, ekrandan geniş sabit genişliklerden kaçının.",
+        ),
+        "az": Message(
+            "Səhifə {viewport} görünüşündə yana sürüşür",
+            "{screen}px enində {viewport} ekranda səhifənin eni {width}px-dir; ziyarətçi səhifəni "
+            "yana çəkə bilir və məzmun kəsilir. Ən geniş element buradadır: {culprit}.",
+            "Bu elementi max-width: 100% ilə məhdudlaşdırın, cədvəlləri və kodu öz "
+            "konteynerində sürüşdürün, ekrandan geniş sabit enlərdən çəkinin.",
+        ),
+        "ru": Message(
+            "Страница прокручивается вбок на {viewport}",
+            "На экране {viewport} шириной {screen}px страница занимает {width}px: её можно "
+            "сдвинуть вбок, и содержимое обрезается. Самый широкий элемент: {culprit}.",
+            "Ограничьте этот элемент max-width: 100%, прокручивайте таблицы и код внутри "
+            "своего контейнера и избегайте фиксированной ширины больше экрана.",
+        ),
+    },
+    "search-no-effect": {
+        "en": Message(
+            "Searching does nothing",
+            "We typed “{query}” into the search field and submitted it: no results page, no "
+            "change on the page and no request. Visitors who rely on search are stuck.",
+            "Connect the search form to a results page or a search request, and show a "
+            "message when nothing matches.",
+        ),
+        "tr": Message(
+            "Arama hiçbir şey yapmıyor",
+            "Arama alanına “{query}” yazıp gönderdik: sonuç sayfası yok, sayfada değişiklik yok, "
+            "istek yok. Aramaya güvenen ziyaretçi takılıp kalıyor.",
+            "Arama formunu bir sonuç sayfasına ya da arama isteğine bağlayın, eşleşme yoksa "
+            "bunu bildiren bir mesaj gösterin.",
+        ),
+        "az": Message(
+            "Axtarış heç nə etmir",
+            "Axtarış sahəsinə “{query}” yazıb göndərdik: nəticə səhifəsi, səhifədə dəyişiklik və "
+            "sorğu yoxdur. Axtarışa güvənən ziyarətçi ilişib qalır.",
+            "Axtarış formasını nəticə səhifəsinə və ya axtarış sorğusuna bağlayın, uyğunluq "
+            "olmadıqda bunu bildirən mesaj göstərin.",
+        ),
+        "ru": Message(
+            "Поиск ничего не делает",
+            "Мы ввели «{query}» в поле поиска и отправили: ни страницы результатов, ни "
+            "изменений на странице, ни запроса. Посетитель, полагающийся на поиск, застревает.",
+            "Свяжите форму поиска со страницей результатов или запросом и показывайте "
+            "сообщение, если ничего не найдено.",
+        ),
+    },
+    "form-accepts-empty": {
+        "en": Message(
+            "“{form}” sends with every field empty",
+            "Submitting the form with nothing filled in went straight to the server; nothing "
+            "on the page told the visitor what was missing. The request was stopped by the "
+            "auditor and never reached the site.",
+            "Mark required fields with required or validate before sending, and show a clear "
+            "message next to each missing field.",
+        ),
+        "tr": Message(
+            "“{form}” tüm alanlar boşken gönderiliyor",
+            "Hiçbir alan doldurulmadan gönderilen form doğrudan sunucuya gitti; sayfada eksik "
+            "olanı söyleyen bir şey yoktu. İstek denetçi tarafından durduruldu, siteye ulaşmadı.",
+            "Zorunlu alanları required ile işaretleyin ya da göndermeden önce doğrulayın, her "
+            "eksik alanın yanında açık bir mesaj gösterin.",
+        ),
+        "az": Message(
+            "“{form}” bütün sahələr boş ikən göndərilir",
+            "Heç bir sahə doldurulmadan göndərilən forma birbaşa serverə getdi; səhifədə nəyin "
+            "çatışmadığını deyən heç nə yox idi. Sorğu yoxlayıcı tərəfindən dayandırıldı, sayta "
+            "çatmadı.",
+            "Məcburi sahələri required ilə işarələyin və ya göndərmədən əvvəl yoxlayın, hər "
+            "çatışmayan sahənin yanında aydın mesaj göstərin.",
+        ),
+        "ru": Message(
+            "«{form}» отправляется с пустыми полями",
+            "Форма без единого заполненного поля сразу ушла на сервер, и на странице не "
+            "появилось ничего о том, чего не хватает. Запрос был остановлен аудитом и до "
+            "сайта не дошёл.",
+            "Отметьте обязательные поля атрибутом required или проверяйте их перед "
+            "отправкой и показывайте понятное сообщение у каждого пустого поля.",
+        ),
+    },
     "no-effect": {
         "en": Message(
             "Clicking “{text}” does nothing",

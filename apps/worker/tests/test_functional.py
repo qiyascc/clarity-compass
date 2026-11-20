@@ -69,3 +69,17 @@ async def test_working_controls_are_not_reported(
 ) -> None:
     findings = await audit(browser, loopback_guard, store, f"{bugfarm}{path}")
     assert findings == []
+
+
+async def test_search_and_form_defects_are_found(
+    browser: Browser, loopback_guard: AddressGuard, store: LocalArtifactStore, bugfarm: str
+) -> None:
+    search = await audit(browser, loopback_guard, store, f"{bugfarm}/listings/")
+    assert [f.source for f in search] == ["functional:search-no-effect"]
+    assert search[0].anchor is not None
+    assert search[0].anchor.selector == "#search"
+
+    form = await audit(browser, loopback_guard, store, f"{bugfarm}/listings/1.html")
+    empty = [f for f in form if f.source == "functional:form-accepts-empty"]
+    assert empty
+    assert "/viewing" in " ".join(e.ref for e in empty[0].evidence)

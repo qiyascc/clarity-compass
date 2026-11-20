@@ -6,7 +6,13 @@
   <main>
     <section><h1>Listing 1</h1><p class="price">185 000 AZN</p><img src="/img/one.svg" width="320" height="200"></section>
     <section><p>Description.</p></section>
-    <section><a class="btn" href="/contact.html">Contact agent</a></section>
+    <section><a class="btn" href="/contact.html">Contact agent</a>
+      <form id="viewing" action="/viewing" method="post">
+        <label for="name">Name</label> <input id="name" name="name">
+        <label for="phone">Phone</label> <input id="phone" name="phone" type="tel">
+        <button>Request a viewing</button>
+      </form>
+    </section>
   </main>
 </body>
 </html>
