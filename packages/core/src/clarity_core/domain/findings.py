@@ -43,6 +43,11 @@ class EvidenceKind(StrEnum):
     METRIC = "metric"
 
 
+OBSERVED_FAILURES = frozenset(
+    {EvidenceKind.ACTION_TRACE, EvidenceKind.NETWORK, EvidenceKind.CONSOLE}
+)
+
+
 class Box(BaseModel):
     x: float
     y: float
@@ -95,6 +100,9 @@ class Finding(BaseModel):
         if not self.evidence:
             raise ValueError("verified findings need evidence")
         kinds = {item.kind for item in self.evidence}
-        if self.category is Category.FUNCTIONAL and EvidenceKind.ACTION_TRACE not in kinds:
-            raise ValueError("verified functional findings need an action trace")
+        if self.category is Category.FUNCTIONAL and not kinds & OBSERVED_FAILURES:
+            raise ValueError(
+                "verified functional findings need an action trace or an observed network "
+                "or console failure"
+            )
         return self
