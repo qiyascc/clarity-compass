@@ -472,6 +472,7 @@ dependencies = [
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "clarity-core" },
+    { name = "cryptography" },
     { name = "procrastinate" },
     { name = "sqlalchemy", extra = ["asyncio"] },
 ]
@@ -481,6 +482,7 @@ requires-dist = [
     { name = "alembic", specifier = ">=1.14" },
     { name = "asyncpg", specifier = ">=0.30" },
     { name = "clarity-core", editable = "packages/core" },
+    { name = "cryptography", specifier = ">=43" },
     { name = "procrastinate", extras = ["psycopg"], specifier = ">=3" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.36" },
 ]
