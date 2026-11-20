@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from clarity_core.domain.capture import PageCapture
 from clarity_core.domain.findings import Finding
+from clarity_core.domain.prediction import PagePrediction
 from clarity_core.domain.profile import AnalysisProfile
 from clarity_persistence.models import FindingRecord, PageRecord, Run, RunStatus, Site, utcnow
 
@@ -101,6 +102,10 @@ class RunRepository:
         self.session.add(record)
         await self.session.flush()
         return record
+
+    async def save_predictions(self, page: PageRecord, prediction: PagePrediction) -> None:
+        page.predictions = _dump(prediction)
+        await self.session.flush()
 
     async def pages(self, run_id: uuid.UUID) -> Sequence[PageRecord]:
         query = (
