@@ -140,12 +140,15 @@ class AnalysisRunner:
 
         total = 0
         review_errors: list[str] = []
+        reported: set[tuple[str, str, str]] = set()
         for done, records in enumerate(groups.values(), start=1):
             records.sort(key=lambda record: VIEWPORT_ORDER.index(Viewport(record.viewport)))
             views = [view for view in [await self._view(record) for record in records] if view]
             if not views:
                 continue
-            findings = run_checks([(view.capture, view.probe) for view in views], language)
+            findings = run_checks(
+                [(view.capture, view.probe) for view in views], language, reported
+            )
             review = None
             if self.reviewer:
                 try:
