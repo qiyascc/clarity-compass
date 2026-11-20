@@ -83,6 +83,7 @@ class PageRecord(Timestamped, Base):
     status_code: Mapped[int | None]
     title: Mapped[str] = mapped_column(String(512), default="")
     capture: Mapped[dict[str, Any]]
+    predictions: Mapped[dict[str, Any] | None]
 
     run: Mapped[Run] = relationship(back_populates="pages")
 
