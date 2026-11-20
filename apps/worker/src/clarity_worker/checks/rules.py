@@ -78,6 +78,27 @@ def short(text: str, limit: int = 60) -> str:
     return text if len(text) <= limit else f"{text[: limit - 1]}…"
 
 
+def _transparent(color: str | None) -> bool:
+    if not color or not color.startswith("rgba("):
+        return False
+    try:
+        return float(color.rstrip(")").rsplit(",", 1)[1]) < 0.1
+    except (IndexError, ValueError):
+        return False
+
+
+def _visually_hidden(element: ProbedElement) -> bool:
+    return element.box.width <= 2 or element.box.height <= 2
+
+
+def _labelled_toggle(probe: PageProbe, element: ProbedElement) -> bool:
+    return any(
+        field.selector == element.selector and field.type in {"checkbox", "radio"} and field.label
+        for form in probe.forms
+        for field in form.fields
+    )
+
+
 def low_contrast(page: Page) -> Iterable[Finding]:
     found = 0
     seen: set[tuple[str | None, str | None, str]] = set()
@@ -85,6 +106,8 @@ def low_contrast(page: Page) -> Iterable[Finding]:
         if found >= MAX_PER_RULE:
             return
         if not element.visible or not element.text or element.contrast is None:
+            continue
+        if _transparent(element.color) or _visually_hidden(element):
             continue
         large = element.font_size >= 24 or (
             element.font_size >= 18.66 and element.font_weight >= 700
@@ -134,7 +157,9 @@ def small_tap_targets(page: Page) -> Iterable[Finding]:
         if not (is_control or compact_link):
             continue
         box = element.box
-        if min(box.width, box.height) >= TAP_TARGET:
+        if min(box.width, box.height) >= TAP_TARGET or _visually_hidden(element):
+            continue
+        if element.tag == "input" and element.name and _labelled_toggle(page.probe, element):
             continue
         found += 1
         yield page.finding(
