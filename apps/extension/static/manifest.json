@@ -1,0 +1,10 @@
+{
+  "manifest_version": 3,
+  "name": "Clarity Compass",
+  "description": "Shows Clarity Compass heatmaps, predicted clicks and review notes on the audited site.",
+  "version": "0.1.0",
+  "permissions": ["storage", "scripting", "tabs"],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "background": { "service_worker": "background.js", "type": "module" },
+  "action": { "default_popup": "popup.html", "default_title": "Clarity Compass" }
+}
