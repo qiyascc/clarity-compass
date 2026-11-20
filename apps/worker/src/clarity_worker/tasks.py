@@ -6,10 +6,12 @@ from pathlib import Path
 from playwright.async_api import ProxySettings, async_playwright
 from procrastinate import App
 
+from clarity_ai.factory import create_provider
 from clarity_persistence.database import create_engine, session_factory
 from clarity_persistence.jobs import ANALYSIS_QUEUE, RUN_ANALYSIS, create_job_app
 from clarity_saliency.predictor import AttentionPredictor
 from clarity_worker.predict import PagePredictor
+from clarity_worker.review import PageReviewer
 from clarity_worker.runner import AnalysisRunner
 from clarity_worker.settings import WorkerSettings
 from clarity_worker.store import LocalArtifactStore
@@ -46,12 +48,19 @@ async def execute(settings: WorkerSettings, run_id: uuid.UUID) -> None:
             try:
                 store = LocalArtifactStore(settings.artifact_dir)
                 attention = attention_predictor(settings.model_dir.resolve())
+                provider = create_provider(
+                    settings.ai_provider,
+                    model=settings.ai_model,
+                    base_url=settings.ai_base_url,
+                    api_key=settings.ai_api_key.get_secret_value() if settings.ai_api_key else None,
+                )
                 runner = AnalysisRunner(
                     session_factory(engine),
                     browser,
                     store,
                     settings.guard(),
                     predictor=PagePredictor(store, attention) if attention else None,
+                    reviewer=PageReviewer(provider, store) if provider else None,
                 )
                 await runner.run(run_id)
             finally:
