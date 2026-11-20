@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Browser worker: exploration, capture and interaction testing."
 requires-python = ">=3.12"
 dependencies = [
+  "clarity-ai",
   "clarity-core",
   "clarity-persistence",
   "clarity-saliency",
@@ -16,6 +17,7 @@ dependencies = [
 clarity-core = { workspace = true }
 clarity-persistence = { workspace = true }
 clarity-saliency = { workspace = true }
+clarity-ai = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]
