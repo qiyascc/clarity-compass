@@ -1,4 +1,4 @@
-import type { ClickTarget, Note, OverlayData } from "@qiyascc/clarity-overlay";
+import type { ClickTarget, Note, OverlayData } from "@qiyas/overlay-sdk";
 import type { Finding, Page } from "@/api/client";
 
 const artifact = (key: string) => `/api/artifacts/${key}`;
