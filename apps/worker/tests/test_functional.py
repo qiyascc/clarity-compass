@@ -57,8 +57,13 @@ async def test_planted_interaction_defects_are_found(
         assert recorded["steps"]
 
 
+@pytest.mark.parametrize("path", ["/about.html", "/contact.html"])
 async def test_working_controls_are_not_reported(
-    browser: Browser, loopback_guard: AddressGuard, store: LocalArtifactStore, bugfarm: str
+    browser: Browser,
+    loopback_guard: AddressGuard,
+    store: LocalArtifactStore,
+    bugfarm: str,
+    path: str,
 ) -> None:
-    findings = await audit(browser, loopback_guard, store, f"{bugfarm}/about.html")
+    findings = await audit(browser, loopback_guard, store, f"{bugfarm}{path}")
     assert findings == []

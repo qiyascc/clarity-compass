@@ -30,6 +30,7 @@ from clarity_worker.store import ArtifactStore
 
 TARGET_EXISTS = "(id) => Boolean(document.getElementById(id) || document.getElementsByName(id)[0])"
 SETTLE_MS = 700
+DISMISS_POLLS = 5
 CLICK_TIMEOUT_MS = 3_000
 MAX_LINK_CHECKS = 40
 LANGUAGE_LABEL = re.compile(
@@ -288,7 +289,7 @@ class FunctionalAuditor:
                         )
                     )
             elif outcome.after.dialogs > outcome.before.dialogs:
-                if not await self._dismiss_dialog(page, watcher, trace):
+                if not await self._dismiss_dialog(page, watcher, element, trace):
                     findings.append(
                         await self._finding(
                             "dialog-no-close",
@@ -340,23 +341,36 @@ class FunctionalAuditor:
         trace.note("click", **outcome.summary())
         return outcome
 
-    async def _dismiss_dialog(self, page: Page, watcher: PageWatcher, trace: Trace) -> bool:
+    async def _dismiss_dialog(
+        self, page: Page, watcher: PageWatcher, element: ProbedElement, trace: Trace
+    ) -> bool:
         await page.keyboard.press("Escape")
-        await page.wait_for_timeout(400)
-        state = await watcher.snapshot()
-        trace.note("press Escape", dialogs=state.dialogs)
-        if state.dialogs == 0:
+        if await self._closed(watcher, element, trace, "press Escape"):
             return True
+        trigger = page.locator(element.selector).first
+        with contextlib.suppress(PlaywrightError):
+            await trigger.click(timeout=1_500)
+            if await self._closed(watcher, element, trace, "click the trigger again"):
+                return True
         close = page.locator(CLOSE_BUTTON).filter(visible=True).first
         try:
             await close.click(timeout=1_500)
         except PlaywrightError:
             trace.note("click close button", found=False)
             return False
-        await page.wait_for_timeout(400)
-        state = await watcher.snapshot()
-        trace.note("click close button", dialogs=state.dialogs)
-        return state.dialogs == 0
+        return await self._closed(watcher, element, trace, "click close button")
+
+    async def _closed(
+        self, watcher: PageWatcher, element: ProbedElement, trace: Trace, action: str
+    ) -> bool:
+        state = await watcher.snapshot(element.selector)
+        for _ in range(DISMISS_POLLS):
+            await asyncio.sleep(0.4)
+            state = await watcher.snapshot(element.selector)
+            if state.dialogs == 0 or state.expanded == "false":
+                break
+        trace.note(action, dialogs=state.dialogs, expanded=state.expanded)
+        return state.dialogs == 0 or state.expanded == "false"
 
     async def _closes_again(
         self,
