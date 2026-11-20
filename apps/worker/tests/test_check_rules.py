@@ -118,3 +118,13 @@ def test_site_wide_elements_are_reported_once_per_run() -> None:
     second = run_checks([page([moved], url="https://shop.test/about")], "en", reported)
     assert sources(first) == ["check:small-tap-target"]
     assert second == []
+
+
+def test_footer_links_lower_on_longer_pages_are_reported_once() -> None:
+    reported: set[tuple[str, str, str]] = set()
+    footer = element(4, box=Box(x=16, y=6270, width=32, height=17))
+    lower = element(4, box=Box(x=16, y=10119, width=32, height=17))
+    first = run_checks([page([footer])], "en", reported)
+    second = run_checks([page([lower], url="https://shop.test/projects")], "en", reported)
+    assert sources(first) == ["check:small-tap-target"]
+    assert second == []

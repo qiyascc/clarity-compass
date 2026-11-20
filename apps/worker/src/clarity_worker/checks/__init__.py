@@ -16,7 +16,9 @@ def run_checks(
     Repeats across viewports are dropped, and so are element findings already in
     `reported`, which callers share between pages so that site-wide parts such as
     the header and footer are reported once per run. Selectors differ between
-    pages for the same element, so it is recognised by its text and placement.
+    pages for the same element, so it is recognised by its text, horizontal
+    position and size. The vertical position is left out because a footer sits
+    lower on longer pages.
     """
     reported = reported if reported is not None else set()
     findings: list[Finding] = []
@@ -41,7 +43,7 @@ def drop_reported(findings: list[Finding], reported: set[SiteKey]) -> list[Findi
         if anchor and (anchor.box or anchor.selector):
             box = anchor.box
             placement = (
-                f"{box.x:.0f},{box.y:.0f},{box.width:.0f}x{box.height:.0f}"
+                f"{box.x:.0f},{box.width:.0f}x{box.height:.0f}"
                 if box
                 else f"selector {anchor.selector}"
             )
