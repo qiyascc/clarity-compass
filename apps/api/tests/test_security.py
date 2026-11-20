@@ -1,9 +1,6 @@
 import time
 
-import pytest
-
 from clarity_api.security import (
-    SecretBox,
     SessionSigner,
     hash_extension_key,
     hash_password,
@@ -32,15 +29,6 @@ def test_session_tokens_expire() -> None:
     token = signer.issue("admin")
     time.sleep(2.1)
     assert signer.read(token) is None
-
-
-def test_secret_box() -> None:
-    box = SecretBox("key")
-    sealed = box.seal(b"hunter2")
-    assert b"hunter2" not in sealed
-    assert box.open(sealed) == b"hunter2"
-    with pytest.raises(ValueError, match="decrypt"):
-        SecretBox("other").open(sealed)
 
 
 def test_extension_keys_are_unique_and_hashed() -> None:

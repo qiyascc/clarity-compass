@@ -1,4 +1,3 @@
-import json
 import uuid
 from datetime import datetime
 from typing import Any
@@ -8,6 +7,7 @@ from pydantic import BaseModel, Field, SecretStr
 from clarity_core.domain.prediction import PagePrediction
 from clarity_core.domain.profile import AnalysisProfile
 from clarity_persistence.models import PageRecord, Run, RunStatus, Site
+from clarity_persistence.secrets import SiteLogin
 
 
 class SiteIn(BaseModel):
@@ -52,9 +52,9 @@ class LoginCredentials(BaseModel):
     password_selector: str | None = None
     submit_selector: str | None = None
 
-    def plaintext(self) -> bytes:
-        data = self.model_dump(mode="json", exclude={"password"})
-        return json.dumps({**data, "password": self.password.get_secret_value()}).encode()
+    def to_login(self) -> SiteLogin:
+        data = self.model_dump(exclude={"password"})
+        return SiteLogin(**data, password=self.password.get_secret_value())
 
 
 class ExtensionKey(BaseModel):
