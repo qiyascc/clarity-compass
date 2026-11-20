@@ -11,6 +11,7 @@
   {"id": "newsletter-dialog-cannot-close", "page": "/", "selector": "#newsletter", "category": "functional"},
   {"id": "unnamed-save-button", "page": "/", "selector": "button.save", "category": "accessibility"},
   {"id": "console-error-on-load", "page": "/", "selector": null, "category": "functional"},
+  {"id": "price-table-overflows-on-mobile", "page": "/listings/2.html", "selector": "table.prices", "category": "ux"},
   {"id": "contact-cta-far-from-price", "page": "/listings/1.html", "selector": "a.btn", "category": "ux"},
   {"id": "missing-alt-text", "page": "/listings/1.html", "selector": "img:not([alt])", "category": "accessibility"}
 ]
