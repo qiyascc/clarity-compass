@@ -102,3 +102,13 @@ async def test_mutating_requests_from_page_are_blocked(
         )
     assert outcome == "blocked"
     assert context.blocked[0].method == "POST"
+
+
+async def test_pages_that_cannot_scroll_do_not_loop(
+    browser: Browser, loopback_guard: AddressGuard, store: LocalArtifactStore, bugfarm: str
+) -> None:
+    result = await capture(
+        browser, loopback_guard, store, f"{bugfarm}/listings/404.html", Viewport.MOBILE
+    )
+    assert result.status == 404
+    assert 1 <= len(result.sections) <= 3
