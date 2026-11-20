@@ -82,6 +82,7 @@ class SiteExplorer:
 
                 lead = captures[0]
                 frontier.adopt_host(lead.final_url)
+                frontier.mark_visited(lead.final_url)
                 if not sitemap_checked:
                     sitemap_checked = True
                     pages = await self._sitemap_pages(primary, lead.final_url)

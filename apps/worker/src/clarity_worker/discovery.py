@@ -1,3 +1,4 @@
+import contextlib
 import heapq
 import itertools
 from dataclasses import dataclass, field
@@ -61,6 +62,10 @@ class Frontier:
 
     def adopt_host(self, url: str) -> None:
         self._sites.add(site_key(url))
+
+    def mark_visited(self, url: str) -> None:
+        with contextlib.suppress(InvalidUrlError):
+            self._seen.add(_identity(normalize_url(url)))
 
     def add_seeds(self, urls: list[str]) -> None:
         for url in urls:
