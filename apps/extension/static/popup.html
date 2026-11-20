@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body { width: 300px; margin: 0; padding: 16px; font: 13px/1.45 system-ui, sans-serif; color: #14171c; }
+      h1 { font-size: 14px; margin: 0 0 12px; }
+      label { display: block; margin-bottom: 10px; }
+      input { width: 100%; box-sizing: border-box; margin-top: 4px; padding: 6px 8px; border: 1px solid #e3e6eb; border-radius: 6px; font: inherit; }
+      button { width: 100%; padding: 8px; border: 0; border-radius: 6px; background: #0f766e; color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+      button[hidden] { display: none; }
+      #status { min-height: 18px; margin: 10px 0 0; color: #4a5260; }
+      #status.error { color: #b42318; }
+    </style>
+  </head>
+  <body>
+    <h1>Clarity Compass</h1>
+    <form id="connect">
+      <label>Panel address <input id="api" placeholder="clarity.example.com" required /></label>
+      <label>Site key <input id="key" placeholder="cc_…" required autocomplete="off" /></label>
+      <button type="submit">Connect</button>
+    </form>
+    <button id="open" type="button" hidden>Open site with overlay</button>
+    <p id="status"></p>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>
