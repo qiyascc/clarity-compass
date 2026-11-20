@@ -465,6 +465,7 @@ source = { editable = "apps/worker" }
 dependencies = [
     { name = "clarity-core" },
     { name = "clarity-persistence" },
+    { name = "clarity-saliency" },
     { name = "defusedxml" },
     { name = "playwright" },
     { name = "pydantic-settings" },
@@ -474,6 +475,7 @@ dependencies = [
 requires-dist = [
     { name = "clarity-core", editable = "packages/core" },
     { name = "clarity-persistence", editable = "packages/persistence" },
+    { name = "clarity-saliency", editable = "packages/saliency" },
     { name = "defusedxml", specifier = ">=0.7" },
     { name = "playwright", specifier = ">=1.49" },
     { name = "pydantic-settings", specifier = ">=2.6" },
