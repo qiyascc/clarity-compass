@@ -12,7 +12,7 @@
     "api:types": "cd ../.. && uv run python -m clarity_api openapi > apps/panel/openapi.json && pnpm --filter @clarity-compass/panel exec openapi-typescript openapi.json -o src/api/schema.ts && rm apps/panel/openapi.json"
   },
   "dependencies": {
-    "@qiyas/overlay-sdk": "0.1.1",
+    "@qiyas/overlay-sdk": "0.1.2",
     "@tanstack/react-query": "^5.108.1",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
