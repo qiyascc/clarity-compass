@@ -334,6 +334,31 @@ def mobile_viewport(page: Page) -> Iterable[Finding]:
         )
 
 
+def horizontal_overflow(page: Page) -> Iterable[Finding]:
+    probe = page.probe
+    screen = page.viewport.width
+    if not page.viewport.is_mobile or probe.document_width <= screen + 2:
+        return
+    culprit = probe.overflowing[0] if probe.overflowing else "html"
+    yield page.finding(
+        "horizontal-overflow",
+        Category.UX,
+        Severity.HIGH,
+        [
+            Evidence(
+                kind=EvidenceKind.METRIC,
+                ref=f"scrollWidth {probe.document_width}px > {screen}px",
+                summary=", ".join(probe.overflowing),
+            )
+        ],
+        ElementAnchor(selector=culprit) if probe.overflowing else None,
+        viewport=VIEWPORT_NAMES.get(page.language, VIEWPORT_NAMES["en"])[page.viewport.value],
+        width=probe.document_width,
+        screen=screen,
+        culprit=culprit,
+    )
+
+
 def slow_load(page: Page) -> Iterable[Finding]:
     if page.capture.load_ms < SLOW_LOAD_MS:
         return
@@ -355,6 +380,7 @@ RULES: tuple[Rule, ...] = (
     low_contrast,
     small_tap_targets,
     mobile_viewport,
+    horizontal_overflow,
     document_basics,
     slow_load,
 )

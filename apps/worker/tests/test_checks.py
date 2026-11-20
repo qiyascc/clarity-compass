@@ -79,3 +79,17 @@ def test_every_language_uses_the_same_placeholders() -> None:
         expected = placeholders(key, "en")
         for language in translations:
             assert placeholders(key, language) == expected, (key, language)
+
+
+async def test_wide_content_scrolls_sideways_on_mobile(
+    browser: Browser, loopback_guard: AddressGuard, store: LocalArtifactStore, bugfarm: str
+) -> None:
+    findings = run_checks(
+        await captured(browser, loopback_guard, store, f"{bugfarm}/listings/2.html"), "en"
+    )
+    overflow = [f for f in findings if f.source == "check:horizontal-overflow"]
+    assert [f.viewport for f in overflow] == [Viewport.MOBILE]
+    assert overflow[0].anchor is not None
+    assert "prices" in (overflow[0].anchor.selector or "") or "table" in (
+        overflow[0].anchor.selector or ""
+    )

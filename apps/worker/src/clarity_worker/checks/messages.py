@@ -339,6 +339,36 @@ CATALOG: dict[str, dict[str, Message]] = {
             "и кэшируйте статику.",
         ),
     },
+    "horizontal-overflow": {
+        "en": Message(
+            "The page scrolls sideways on {viewport}",
+            "The page is {width}px wide on a {viewport} screen of {screen}px, so visitors can "
+            "drag it sideways and content gets cut off. The widest element starts here: {culprit}.",
+            "Constrain that element with max-width: 100%, let tables and code scroll inside their "
+            "own container, and avoid fixed widths wider than the screen.",
+        ),
+        "tr": Message(
+            "Sayfa {viewport} görünümünde yana kayıyor",
+            "{screen}px genişliğindeki {viewport} ekranda sayfa {width}px genişliğinde; ziyaretçi "
+            "sayfayı yana sürükleyebiliyor ve içerik kesiliyor. En geniş öğe burada: {culprit}.",
+            "Bu öğeyi max-width: 100% ile sınırlayın, tabloları ve kodu kendi kapsayıcısında "
+            "kaydırın, ekrandan geniş sabit genişliklerden kaçının.",
+        ),
+        "az": Message(
+            "Səhifə {viewport} görünüşündə yana sürüşür",
+            "{screen}px enində {viewport} ekranda səhifənin eni {width}px-dir; ziyarətçi səhifəni "
+            "yana çəkə bilir və məzmun kəsilir. Ən geniş element buradadır: {culprit}.",
+            "Bu elementi max-width: 100% ilə məhdudlaşdırın, cədvəlləri və kodu öz "
+            "konteynerində sürüşdürün, ekrandan geniş sabit enlərdən çəkinin.",
+        ),
+        "ru": Message(
+            "Страница прокручивается вбок на {viewport}",
+            "На экране {viewport} шириной {screen}px страница занимает {width}px: её можно "
+            "сдвинуть вбок, и содержимое обрезается. Самый широкий элемент: {culprit}.",
+            "Ограничьте этот элемент max-width: 100%, прокручивайте таблицы и код внутри "
+            "своего контейнера и избегайте фиксированной ширины больше экрана.",
+        ),
+    },
     "no-effect": {
         "en": Message(
             "Clicking “{text}” does nothing",
