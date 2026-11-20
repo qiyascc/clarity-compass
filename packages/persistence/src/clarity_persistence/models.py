@@ -101,3 +101,18 @@ class FindingRecord(Timestamped, Base):
     severity: Mapped[str] = mapped_column(String(16))
     status: Mapped[str] = mapped_column(String(16))
     data: Mapped[dict[str, Any]]
+
+
+class Simulation(Timestamped, Base):
+    __tablename__ = "simulations"
+
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    run_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("runs.id", ondelete="CASCADE"))
+    finding_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("findings.id", ondelete="CASCADE"))
+    status: Mapped[RunStatus] = mapped_column(
+        Enum(RunStatus, name="run_status", values_callable=lambda e: [m.value for m in e]),
+        default=RunStatus.QUEUED,
+    )
+    patch: Mapped[dict[str, Any] | None]
+    result: Mapped[dict[str, Any] | None]
+    error: Mapped[str | None] = mapped_column(Text)

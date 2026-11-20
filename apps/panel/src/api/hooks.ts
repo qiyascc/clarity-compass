@@ -6,6 +6,7 @@ import {
   type Page,
   type Report,
   type Run,
+  type Simulation,
   type Site,
   type SiteInput,
   send,
@@ -162,4 +163,20 @@ export const useReport = (runId: string) =>
     queryKey: keys.report(runId),
     queryFn: () => api<Report>(`/runs/${runId}/report`),
     retry: (count, error) => !(error instanceof ApiError && error.status === 404) && count < 2,
+  });
+
+export function useSimulate() {
+  return useMutation({
+    mutationFn: (findingId: string) =>
+      api<Simulation>(`/findings/${findingId}/simulations`, send("POST")),
+  });
+}
+
+export const useSimulation = (id: string | null) =>
+  useQuery({
+    queryKey: ["simulations", id],
+    queryFn: () => api<Simulation>(`/simulations/${id}`),
+    enabled: id !== null,
+    refetchInterval: (query) =>
+      query.state.data && ["queued", "running"].includes(query.state.data.status) ? 2500 : false,
   });

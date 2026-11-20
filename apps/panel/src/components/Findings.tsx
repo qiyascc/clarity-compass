@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router";
 import type { Finding } from "@/api/client";
+import { useSimulate } from "@/api/hooks";
+import { SimulationView } from "./SimulationView";
 import { StatusBadge } from "./StatusBadge";
 
 const CATEGORY_LABELS: Record<string, string> = {
@@ -25,6 +27,8 @@ const path = (url: string) => {
 export function Findings({ runId, findings }: { runId: string; findings: Finding[] }) {
   const [category, setCategory] = useState<string | null>(null);
   const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [simulations, setSimulations] = useState<Record<string, string>>({});
+  const simulate = useSimulate();
 
   const counts = useMemo(() => {
     const result = new Map<string, number>();
@@ -86,6 +90,31 @@ export function Findings({ runId, findings }: { runId: string; findings: Finding
               <span className="font-medium">Fix: </span>
               {finding.recommendation}
             </p>
+            {finding.anchor?.selector &&
+              finding.category !== "functional" &&
+              !simulations[finding.id ?? ""] && (
+                <button
+                  type="button"
+                  className="text-xs font-medium text-accent hover:underline disabled:text-ink-faint"
+                  disabled={simulate.isPending}
+                  onClick={() =>
+                    simulate.mutate(finding.id ?? "", {
+                      onSuccess: (simulation) =>
+                        setSimulations((current) => ({
+                          ...current,
+                          [finding.id ?? ""]: simulation.id,
+                        })),
+                    })
+                  }
+                >
+                  Simulate this fix
+                </button>
+              )}
+            {simulations[finding.id ?? ""] && (
+              <div className="mt-2 rounded-md border border-line p-3">
+                <SimulationView id={simulations[finding.id ?? ""] as string} />
+              </div>
+            )}
           </li>
         ))}
       </ul>

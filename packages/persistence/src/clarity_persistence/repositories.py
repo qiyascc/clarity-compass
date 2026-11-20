@@ -9,7 +9,15 @@ from clarity_core.domain.capture import PageCapture
 from clarity_core.domain.findings import Finding
 from clarity_core.domain.prediction import PagePrediction
 from clarity_core.domain.profile import AnalysisProfile
-from clarity_persistence.models import FindingRecord, PageRecord, Run, RunStatus, Site, utcnow
+from clarity_persistence.models import (
+    FindingRecord,
+    PageRecord,
+    Run,
+    RunStatus,
+    Simulation,
+    Site,
+    utcnow,
+)
 
 
 class SiteRepository:
@@ -151,3 +159,39 @@ class RunRepository:
 def _dump(model: Any) -> dict[str, Any]:
     data: dict[str, Any] = model.model_dump(mode="json")
     return data
+
+
+class SimulationRepository:
+    def __init__(self, session: AsyncSession) -> None:
+        self.session = session
+
+    async def create(self, finding: FindingRecord) -> Simulation:
+        simulation = Simulation(run_id=finding.run_id, finding_id=finding.id)
+        self.session.add(simulation)
+        await self.session.flush()
+        return simulation
+
+    async def get(self, simulation_id: uuid.UUID) -> Simulation | None:
+        return await self.session.get(Simulation, simulation_id)
+
+    async def for_finding(self, finding_id: uuid.UUID) -> Sequence[Simulation]:
+        query = (
+            select(Simulation)
+            .where(Simulation.finding_id == finding_id)
+            .order_by(Simulation.created_at.desc())
+        )
+        return (await self.session.scalars(query)).all()
+
+    async def finish(
+        self,
+        simulation: Simulation,
+        *,
+        patch: dict[str, Any] | None = None,
+        result: dict[str, Any] | None = None,
+        error: str | None = None,
+    ) -> None:
+        simulation.patch = patch
+        simulation.result = result
+        simulation.error = error
+        simulation.status = RunStatus.FAILED if error else RunStatus.COMPLETED
+        await self.session.flush()
