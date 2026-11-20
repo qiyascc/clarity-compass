@@ -16,7 +16,8 @@ def create_app(settings: Settings, queue: RunQueue) -> FastAPI:
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         engine = create_engine(settings.database_url)
         app.state.sessions = session_factory(engine)
-        yield
+        async with queue.lifespan():
+            yield
         await engine.dispose()
 
     app = FastAPI(title="Clarity Compass", lifespan=lifespan, docs_url="/api/docs")
