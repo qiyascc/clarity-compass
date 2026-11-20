@@ -7,7 +7,7 @@ from alembic.config import Config
 from alembic.migration import MigrationContext
 from sqlalchemy import Connection, text
 
-from clarity_persistence.database import create_engine
+from clarity_persistence.database import create_engine, owned_by_application
 from clarity_persistence.models import Base
 
 ALEMBIC_INI = Path(__file__).resolve().parents[1] / "alembic.ini"
@@ -22,7 +22,8 @@ async def _reset(url: str) -> None:
 
 
 def _diff(connection: Connection) -> list[object]:
-    return list(compare_metadata(MigrationContext.configure(connection), Base.metadata))
+    context = MigrationContext.configure(connection, opts={"include_name": owned_by_application})
+    return list(compare_metadata(context, Base.metadata))
 
 
 async def _schema_diff(url: str) -> list[object]:
@@ -31,6 +32,17 @@ async def _schema_diff(url: str) -> list[object]:
         diff = await connection.run_sync(_diff)
     await engine.dispose()
     return diff
+
+
+async def _tables(url: str) -> set[str]:
+    engine = create_engine(url)
+    async with engine.connect() as connection:
+        rows = await connection.execute(
+            text("select tablename from pg_tables where schemaname = 'public'")
+        )
+        names = {row[0] for row in rows} - {"alembic_version"}
+    await engine.dispose()
+    return names
 
 
 def test_migrations_match_the_models(database_url: str) -> None:
@@ -42,4 +54,6 @@ def test_migrations_match_the_models(database_url: str) -> None:
     assert asyncio.run(_schema_diff(database_url)) == []
 
     command.downgrade(config, "base")
+    assert not asyncio.run(_tables(database_url))
     command.upgrade(config, "head")
+    assert "procrastinate_jobs" in asyncio.run(_tables(database_url))
