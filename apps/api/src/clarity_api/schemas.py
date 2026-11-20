@@ -5,6 +5,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field, SecretStr
 
+from clarity_core.domain.prediction import PagePrediction
 from clarity_core.domain.profile import AnalysisProfile
 from clarity_persistence.models import PageRecord, Run, RunStatus, Site
 
@@ -83,6 +84,7 @@ class PageOut(BaseModel):
     status_code: int | None
     title: str
     capture: dict[str, Any]
+    predictions: PagePrediction | None
 
     @classmethod
     def of(cls, page: PageRecord) -> "PageOut":

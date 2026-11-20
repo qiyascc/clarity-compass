@@ -6,6 +6,7 @@ WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY packages/core/pyproject.toml packages/core/
 COPY packages/persistence/pyproject.toml packages/persistence/
+COPY packages/saliency/pyproject.toml packages/saliency/
 COPY apps/api/pyproject.toml apps/api/
 COPY apps/worker/pyproject.toml apps/worker/
 RUN uv sync --frozen --no-dev --no-install-workspace --package clarity-api

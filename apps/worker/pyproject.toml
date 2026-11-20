@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
   "clarity-core",
   "clarity-persistence",
+  "clarity-saliency",
   "defusedxml>=0.7",
   "playwright>=1.49",
   "pydantic-settings>=2.6",
@@ -14,6 +15,7 @@ dependencies = [
 [tool.uv.sources]
 clarity-core = { workspace = true }
 clarity-persistence = { workspace = true }
+clarity-saliency = { workspace = true }
 
 [build-system]
 requires = ["hatchling"]

@@ -1,13 +1,28 @@
+import logging
 import uuid
+from functools import cache
+from pathlib import Path
 
 from playwright.async_api import ProxySettings, async_playwright
 from procrastinate import App
 
 from clarity_persistence.database import create_engine, session_factory
 from clarity_persistence.jobs import ANALYSIS_QUEUE, RUN_ANALYSIS, create_job_app
+from clarity_saliency.predictor import AttentionPredictor
+from clarity_worker.predict import PagePredictor
 from clarity_worker.runner import AnalysisRunner
 from clarity_worker.settings import WorkerSettings
 from clarity_worker.store import LocalArtifactStore
+
+log = logging.getLogger(__name__)
+
+
+@cache
+def attention_predictor(model_dir: Path) -> AttentionPredictor | None:
+    if not any(model_dir.glob("*.onnx")):
+        log.warning("no saliency models in %s; attention prediction is disabled", model_dir)
+        return None
+    return AttentionPredictor(model_dir)
 
 
 def build_jobs(settings: WorkerSettings) -> App:
@@ -29,11 +44,14 @@ async def execute(settings: WorkerSettings, run_id: uuid.UUID) -> None:
         async with async_playwright() as playwright:
             browser = await playwright.chromium.launch(proxy=proxy)
             try:
+                store = LocalArtifactStore(settings.artifact_dir)
+                attention = attention_predictor(settings.model_dir.resolve())
                 runner = AnalysisRunner(
                     session_factory(engine),
                     browser,
-                    LocalArtifactStore(settings.artifact_dir),
+                    store,
                     settings.guard(),
+                    predictor=PagePredictor(store, attention) if attention else None,
                 )
                 await runner.run(run_id)
             finally:

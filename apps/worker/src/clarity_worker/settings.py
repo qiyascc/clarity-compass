@@ -13,6 +13,7 @@ class WorkerSettings(BaseSettings):
 
     database_url: str
     artifact_dir: Path = Path("var/artifacts")
+    model_dir: Path = Path("models")
     egress_proxy: str | None = None
     allowed_networks: list[str] = Field(default_factory=list)
     concurrency: int = Field(default=1, ge=1, le=8)
