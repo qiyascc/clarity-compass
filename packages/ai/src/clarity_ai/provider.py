@@ -4,6 +4,7 @@ from typing import Literal, Protocol
 from pydantic import BaseModel
 
 Effort = Literal["low", "medium", "high", "xhigh", "max"]
+MediaType = Literal["image/png", "image/jpeg", "image/webp"]
 
 
 @dataclass(frozen=True)
@@ -14,7 +15,7 @@ class Text:
 @dataclass(frozen=True)
 class Image:
     data: bytes
-    media_type: Literal["image/png", "image/jpeg", "image/webp"] = "image/jpeg"
+    media_type: MediaType = "image/jpeg"
     label: str | None = None
 
 
