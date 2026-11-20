@@ -15,19 +15,50 @@ sites only through Smokescreen, which refuses loopback, private, link-local and
 other non-public destinations after DNS resolution, so redirects and
 subresources cannot be used to reach the host or the internal network.
 
-## First start
+## Configure
 
 ```sh
 cp .env.example .env
 uv run python -m clarity_api generate-secret   # CLARITY_SECRET_KEY
 uv run python -m clarity_api generate-secret   # CLARITY_CREDENTIALS_KEY
 uv run python -m clarity_api hash-password     # CLARITY_ADMIN_PASSWORD_HASH
+```
+
+Set `CLARITY_ADMIN_USERNAME` to the name you sign in with. The password hash
+contains `$` characters, so wrap it in single quotes in `.env`:
+`CLARITY_ADMIN_PASSWORD_HASH='$argon2id$v=19$...'`. Also set a real
+`POSTGRES_PASSWORD` and, for the design review, `ANTHROPIC_API_KEY`.
+
+## Run it locally
+
+```sh
 docker compose -f infra/compose.yaml --env-file .env up -d --build
 ```
 
-The panel is served on `CLARITY_HTTP_PORT` (default `127.0.0.1:8080`, so Docker
-does not publish it past the host firewall). Put it behind a
-TLS-terminating reverse proxy and keep `CLARITY_SECURE_COOKIES=true`.
+Open <http://127.0.0.1:8080>. Without HTTPS the browser drops secure cookies,
+so keep `CLARITY_SECURE_COOKIES=false` for a local run.
+
+## Deploy on your own domain
+
+The panel listens on `CLARITY_HTTP_PORT`, which defaults to `127.0.0.1:8080` so
+Docker does not publish it past the host firewall. A reverse proxy on the host
+terminates TLS and forwards to it.
+
+1. Point an `A` (and `AAAA`) record for your domain at the server.
+2. Copy [`infra/nginx/host.conf.example`](../infra/nginx/host.conf.example) to
+   `/etc/nginx/sites-available/`, replace `panel.example.com` with your domain
+   and enable it.
+3. Get a certificate, for example with
+   `certbot certonly --webroot -w /var/www/letsencrypt -d your.domain`, then
+   `nginx -t && systemctl reload nginx`.
+4. Set `CLARITY_SECURE_COOKIES=true` and restart the stack.
+
+Any other TLS proxy works as long as it forwards to `127.0.0.1:8080` and
+overwrites `X-Forwarded-For` with the client address: the panel uses it to
+throttle failed sign-ins per visitor.
+
+Visitors who are not signed in see a public page that links to the
+repository; the admin area lives behind `/login`.
 
 `CLARITY_CREDENTIALS_KEY` encrypts stored site logins. Changing it makes
 existing credentials unreadable; re-enter them in the panel afterwards.
