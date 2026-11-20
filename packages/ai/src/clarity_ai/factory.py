@@ -18,6 +18,8 @@ def create_provider(
 ) -> LLMProvider | None:
     if kind == "none":
         return None
+    # Compose passes unset variables as empty strings.
+    model, base_url, api_key = model or None, base_url or None, api_key or None
     if kind == "anthropic":
         client = anthropic.AsyncAnthropic(api_key=api_key, base_url=base_url)
         return AnthropicProvider(client, model=model or DEFAULT_MODEL)

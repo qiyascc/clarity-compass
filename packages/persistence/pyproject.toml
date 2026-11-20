@@ -8,7 +8,8 @@ dependencies = [
   "asyncpg>=0.30",
   "clarity-core",
   "cryptography>=43",
-  "procrastinate[psycopg]>=3",
+  "procrastinate>=3",
+  "psycopg[binary]>=3.2",
   "sqlalchemy[asyncio]>=2.0.36",
 ]
 

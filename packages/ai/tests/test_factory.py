@@ -23,3 +23,10 @@ def test_anthropic_model_can_be_overridden() -> None:
 def test_openai_needs_a_model() -> None:
     with pytest.raises(ValueError, match="model"):
         create_provider("openai")
+
+
+def test_empty_settings_fall_back_to_defaults() -> None:
+    provider = create_provider("anthropic", api_key="sk-test", model="", base_url="")
+    assert isinstance(provider, AnthropicProvider)
+    assert provider.model == "claude-opus-5-5"
+    assert str(provider.client.base_url).startswith("https://api.anthropic.com")
