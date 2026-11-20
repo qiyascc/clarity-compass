@@ -1,6 +1,7 @@
 from procrastinate import App, PsycopgConnector
 
 RUN_ANALYSIS = "run_analysis"
+SIMULATE_FIX = "simulate_fix"
 ANALYSIS_QUEUE = "analysis"
 
 
