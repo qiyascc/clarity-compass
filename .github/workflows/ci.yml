@@ -23,7 +23,7 @@ jobs:
       - run: uv run playwright install --with-deps chromium
       - run: uv run ruff check .
       - run: uv run ruff format --check .
-      - run: for project in packages/core packages/persistence apps/worker; do uv run mypy $project || exit 1; done
+      - run: for project in packages/core packages/persistence apps/api apps/worker; do uv run mypy $project || exit 1; done
       - run: uv run pytest
 
   typescript:

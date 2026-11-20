@@ -5,7 +5,7 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy.engine import Connection
 
-from clarity_persistence.database import create_engine
+from clarity_persistence.database import create_engine, owned_by_application
 from clarity_persistence.models import Base
 
 config = context.config
@@ -21,7 +21,12 @@ def database_url() -> str:
 
 
 def migrate(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=Base.metadata, compare_type=True)
+    context.configure(
+        connection=connection,
+        target_metadata=Base.metadata,
+        compare_type=True,
+        include_name=owned_by_application,
+    )
     with context.begin_transaction():
         context.run_migrations()
 
