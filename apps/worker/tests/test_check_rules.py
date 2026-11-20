@@ -113,7 +113,8 @@ def test_labelled_checkboxes_are_not_small_targets() -> None:
 def test_site_wide_elements_are_reported_once_per_run() -> None:
     reported: set[tuple[str, str, str]] = set()
     nav = element(4)
+    moved = element(4, selector="ul:nth-of-type(1) > li > a")
     first = run_checks([page([nav])], "en", reported)
-    second = run_checks([page([nav], url="https://shop.test/about")], "en", reported)
+    second = run_checks([page([moved], url="https://shop.test/about")], "en", reported)
     assert sources(first) == ["check:small-tap-target"]
     assert second == []

@@ -15,7 +15,8 @@ def run_checks(
 
     Repeats across viewports are dropped, and so are element findings already in
     `reported`, which callers share between pages so that site-wide parts such as
-    the header and footer are reported once per run.
+    the header and footer are reported once per run. Selectors differ between
+    pages for the same element, so it is recognised by its text and placement.
     """
     reported = reported if reported is not None else set()
     findings: list[Finding] = []
@@ -29,8 +30,10 @@ def run_checks(
                 if key in seen and finding.source != "check:small-tap-target":
                     continue
                 seen.add(key)
-                if finding.anchor and selector:
-                    site_key = (finding.source, selector, finding.anchor.text or "")
+                if finding.anchor and finding.anchor.box:
+                    box = finding.anchor.box
+                    placement = f"{box.x:.0f},{box.y:.0f},{box.width:.0f}x{box.height:.0f}"
+                    site_key = (finding.source, finding.anchor.text or "", placement)
                     if site_key in reported:
                         continue
                     reported.add(site_key)
