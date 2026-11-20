@@ -35,9 +35,11 @@ async def test_planted_interaction_defects_are_found(
 ) -> None:
     findings = await audit(browser, loopback_guard, store, f"{bugfarm}/")
     by_rule = {f.source.removeprefix("functional:"): f for f in findings}
+    no_effect = {
+        f.anchor.selector for f in findings if f.source == "functional:no-effect" and f.anchor
+    }
 
-    assert by_rule["no-effect"].anchor
-    assert by_rule["no-effect"].anchor.selector == "#search-btn"
+    assert "#search-btn" in no_effect
     assert by_rule["click-error"].anchor
     assert by_rule["click-error"].anchor.selector == "#to-top"
     assert "scrollToTop" in by_rule["click-error"].description
