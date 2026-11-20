@@ -5,6 +5,7 @@ from collections.abc import AsyncIterator, Iterator
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qsl
 
 import pytest
 from playwright.async_api import Browser, async_playwright
@@ -15,9 +16,41 @@ from clarity_persistence.testing import database_url_for_tests, recreate_tables
 FIXTURE_ROOT = Path(__file__).resolve().parents[3] / "fixtures" / "bugfarmcc"
 
 
+LOGIN = {"email": "demo@bugfarm.test", "password": "correct-horse"}
+PRIVATE = ("/account.html", "/account-saved.html")
+
+
 class QuietHandler(SimpleHTTPRequestHandler):
     def log_message(self, format: str, *args: object) -> None:
         pass
+
+    def do_GET(self) -> None:
+        if self.path.startswith(PRIVATE) and "session=ok" not in self.headers.get("Cookie", ""):
+            self._redirect("/login.html")
+            return
+        if self.path.startswith("/logout"):
+            self.send_response(303)
+            self.send_header("Set-Cookie", "session=; Path=/; Max-Age=0")
+            self.send_header("Location", "/")
+            self.end_headers()
+            return
+        super().do_GET()
+
+    def do_POST(self) -> None:
+        length = int(self.headers.get("Content-Length", 0))
+        form = dict(parse_qsl(self.rfile.read(length).decode()))
+        if self.path == "/session" and form == LOGIN:
+            self.send_response(303)
+            self.send_header("Set-Cookie", "session=ok; Path=/; HttpOnly")
+            self.send_header("Location", "/account.html")
+            self.end_headers()
+            return
+        self._redirect("/login.html?error=1")
+
+    def _redirect(self, location: str) -> None:
+        self.send_response(303)
+        self.send_header("Location", location)
+        self.end_headers()
 
 
 @pytest.fixture(scope="session")
