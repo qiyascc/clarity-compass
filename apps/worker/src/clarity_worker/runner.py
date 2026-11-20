@@ -18,6 +18,7 @@ from clarity_core.net.guard import AddressGuard
 from clarity_persistence.models import PageRecord, Run, RunStatus, Site
 from clarity_persistence.repositories import RunRepository
 from clarity_persistence.secrets import SecretBox, SiteLogin
+from clarity_worker.accessibility import audit_accessibility
 from clarity_worker.browser import GuardedContext, open_context
 from clarity_worker.checks import drop_reported, run_checks
 from clarity_worker.explorer import SiteExplorer
@@ -274,6 +275,9 @@ class AnalysisRunner:
                 if self._login:
                     await sign_in(context, self._login)
                 try:
+                    findings += await audit_accessibility(
+                        context, view.capture.final_url, profile.language.value
+                    )
                     findings += await auditor.audit(context, view.capture.final_url)
                 except PlaywrightError as exc:
                     log.warning("interaction audit failed for %s: %s", view.capture.final_url, exc)
