@@ -71,7 +71,7 @@ services:
     build: { context: .., dockerfile: infra/docker/web.Dockerfile }
     restart: unless-stopped
     ports:
-      - "${CLARITY_HTTP_PORT:-8080}:80"
+      - "${CLARITY_HTTP_PORT:-127.0.0.1:8080}:80"
     networks: [internal, public]
     depends_on:
       api: { condition: service_started }
