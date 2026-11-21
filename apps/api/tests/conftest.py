@@ -28,6 +28,7 @@ async def settings(tmp_path: Path) -> Settings:
         credentials_key=SecretStr("test-credentials"),
         admin_username="admin",
         admin_password_hash=SecretStr(PASSWORD_HASH),
+        users={"editor": SecretStr(PASSWORD_HASH)},
         artifact_dir=tmp_path / "artifacts",
         secure_cookies=False,
         _env_file=None,

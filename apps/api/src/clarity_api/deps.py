@@ -42,10 +42,14 @@ async def session(request: Request) -> AsyncIterator[AsyncSession]:
             raise
 
 
-def current_user(request: Request, signer: Annotated[SessionSigner, Depends(signer)]) -> str:
+def current_user(
+    request: Request,
+    signer: Annotated[SessionSigner, Depends(signer)],
+    settings: Annotated[Settings, Depends(settings)],
+) -> str:
     token = request.cookies.get(SESSION_COOKIE)
     username = signer.read(token) if token else None
-    if username is None:
+    if username is None or settings.password_hash(username) is None:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "not signed in")
     return username
 
