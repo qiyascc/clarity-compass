@@ -4,7 +4,7 @@ import { toOverlayData } from "@/replay/overlayData";
 
 const page = {
   id: "p1",
-  url: "https://theqiyas.cc/",
+  url: "https://example.com/",
   viewport: "mobile",
   status_code: 200,
   title: "Home",
@@ -79,7 +79,7 @@ describe("toOverlayData", () => {
       finding({}),
       finding({ id: "f2", viewport: "desktop" }),
       finding({ id: "f3", page_url: "https://qiyas.cc/about/" }),
-      finding({ id: "f4", page_url: "https://theqiyas.cc/#top" }),
+      finding({ id: "f4", page_url: "https://example.com/#top" }),
     ]);
     expect(data.notes?.map((note) => note.id)).toEqual(["f1", "f4"]);
   });
