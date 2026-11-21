@@ -3,8 +3,8 @@ import { emptyProfile, fromProfile, toProfile } from "@/components/profile";
 
 describe("toProfile", () => {
   it("only sends selected pages for the pages scope", () => {
-    const site = toProfile({ ...emptyProfile, startUrl: " theqiyas.cc ", pages: "/a\n/b" });
-    expect(site.start_url).toBe("theqiyas.cc");
+    const site = toProfile({ ...emptyProfile, startUrl: " example.com ", pages: "/a\n/b" });
+    expect(site.start_url).toBe("example.com");
     expect(site.pages).toEqual([]);
 
     const pages = toProfile({ ...emptyProfile, scope: "pages", pages: " /a \n\n/b\n" });
@@ -19,9 +19,9 @@ describe("toProfile", () => {
   it("round-trips through fromProfile", () => {
     const values = {
       ...emptyProfile,
-      startUrl: "https://theqiyas.cc/",
+      startUrl: "https://example.com/",
       scope: "pages" as const,
-      pages: "https://theqiyas.cc/about",
+      pages: "https://example.com/about",
       exclude: "/admin/*",
       language: "az" as const,
       maxPages: 5,
