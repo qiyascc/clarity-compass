@@ -57,7 +57,7 @@ export function ProfileForm({
             required
             value={siteName}
             onChange={(e) => setSiteName(e.target.value)}
-            placeholder="Qiyas CC"
+            placeholder="Example"
           />
         </Field>
         <Field label="Start URL">
@@ -65,7 +65,7 @@ export function ProfileForm({
             required
             value={values.startUrl}
             onChange={(e) => set("startUrl", e.target.value)}
-            placeholder="theqiyas.cc"
+            placeholder="example.com"
           />
         </Field>
       </div>
