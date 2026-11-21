@@ -24,9 +24,12 @@ async def login(
     client = request.client.host if request.client else "unknown"
     if throttle.blocked(client):
         raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "too many attempts")
-    valid = body.username == settings.admin_username and verify_password(
-        settings.admin_password_hash.get_secret_value(), body.password
+    stored = settings.password_hash(body.username)
+    # Unknown names still pay for a hash check so timing does not reveal which names exist.
+    checked = verify_password(
+        stored or settings.admin_password_hash.get_secret_value(), body.password
     )
+    valid = stored is not None and checked
     if not valid:
         throttle.failed(client)
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "invalid credentials")

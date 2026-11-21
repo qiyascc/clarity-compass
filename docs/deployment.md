@@ -29,6 +29,12 @@ contains `$` characters, so wrap it in single quotes in `.env`:
 `CLARITY_ADMIN_PASSWORD_HASH='$argon2id$v=19$...'`. Also set a real
 `POSTGRES_PASSWORD` and, for the design review, `ANTHROPIC_API_KEY`.
 
+To let more people sign in, hash a password for each of them and list them in
+`CLARITY_USERS` as JSON, again in single quotes:
+`CLARITY_USERS='{"alex": "$argon2id$v=19$..."}'`. Every account has full
+access. Removing a name from the list signs that person out on their next
+request.
+
 ## Run it locally
 
 ```sh
