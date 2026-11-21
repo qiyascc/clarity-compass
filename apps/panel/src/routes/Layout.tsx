@@ -41,7 +41,6 @@ export function Layout() {
             </nav>
           </div>
           <div className="flex items-center gap-5 whitespace-nowrap text-sm text-ink-soft">
-            <span className="hidden font-mono text-xs sm:inline">{me.data.username}</span>
             <button
               type="button"
               className="transition-colors hover:text-ink"
