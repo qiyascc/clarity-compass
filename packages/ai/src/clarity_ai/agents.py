@@ -90,7 +90,8 @@ class RecommendationAgent:
                 Text("Pages:\n" + ("\n".join(pages) or "(no page reviews)")),
                 Text("Findings:\n" + (numbered or "(none)")),
             ],
-            max_tokens=12_000,
+            # Thinking shares this budget; non-streaming calls are capped near 21k.
+            max_tokens=20_000,
             effort="high",
         )
         generated = await self.provider.structured(prompt, SiteAssessment)

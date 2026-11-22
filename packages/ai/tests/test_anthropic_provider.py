@@ -5,7 +5,7 @@ from typing import Any
 import anthropic
 import httpx2 as httpx
 import pytest
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from clarity_ai.anthropic_provider import AnthropicProvider
 from clarity_ai.provider import Image, Prompt, ProviderError, RefusalError, Text
@@ -83,6 +83,15 @@ async def test_truncated_output_raises() -> None:
     messages = FakeMessages(response("max_tokens"))
     with pytest.raises(ProviderError, match="max_tokens"):
         await AnthropicProvider(client(messages)).structured(PROMPT, Verdict)
+
+
+async def test_unparseable_output_raises_a_provider_error() -> None:
+    try:
+        Verdict.model_validate_json('{"ok": tr')
+    except ValidationError as exc:
+        error = exc
+    with pytest.raises(ProviderError, match="unparseable"):
+        await AnthropicProvider(client(FakeMessages(error=error))).structured(PROMPT, Verdict)
 
 
 async def test_api_errors_are_wrapped() -> None:
