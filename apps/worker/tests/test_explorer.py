@@ -85,7 +85,7 @@ async def test_progress_callback_sees_each_capture(explorer: SiteExplorer, bugfa
     assert seen == [f"{bugfarm}/about.html"]
 
 
-async def test_signs_in_once_and_shares_the_session(
+async def test_signed_in_runs_take_one_viewport_at_a_time(
     explorer: SiteExplorer, bugfarm: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     opened: list[GuardedContext] = []
@@ -101,21 +101,20 @@ async def test_signs_in_once_and_shares_the_session(
 
     async def prepare(context: GuardedContext) -> str:
         prepared.append(context)
-        await context.context.add_cookies([{"name": "session", "value": "s1", "url": bugfarm}])
         return f"{bugfarm}/about.html"
 
-    sessions: list[list[str]] = []
-
-    async def on_page(capture: object) -> None:
-        sessions.append([c["value"] for ctx in opened for c in await ctx.context.cookies()])
-
     profile = AnalysisProfile(
-        start_url=f"{bugfarm}/about.html",
-        scope=ScopeMode.SINGLE,
+        start_url=bugfarm,
         viewports=[Viewport.DESKTOP, Viewport.MOBILE],
+        limits=CrawlLimits(max_pages=3),
     )
-    await explorer.explore(profile, run_id="r6", on_page=on_page, prepare=prepare)
+    result = await explorer.explore(profile, run_id="r6", prepare=prepare)
 
-    assert prepared == opened[:1]
-    assert sessions
-    assert all(values.count("s1") == 2 for values in sessions)
+    assert prepared == opened
+    order = [page.viewport for page in result.pages]
+    assert order == [Viewport.DESKTOP] * 3 + [Viewport.MOBILE] * 3
+    by_viewport = {
+        viewport: [p.requested_url for p in result.pages if p.viewport is viewport]
+        for viewport in (Viewport.DESKTOP, Viewport.MOBILE)
+    }
+    assert by_viewport[Viewport.DESKTOP] == by_viewport[Viewport.MOBILE]

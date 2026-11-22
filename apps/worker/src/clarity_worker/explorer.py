@@ -5,8 +5,7 @@ from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
 from urllib.parse import urljoin, urlsplit
 
-from playwright._impl._api_structures import SetCookieParam
-from playwright.async_api import APIRequestContext, Browser, Cookie
+from playwright.async_api import APIRequestContext, Browser
 from playwright.async_api import Error as PlaywrightError
 
 from clarity_core.domain.capture import PageCapture
@@ -71,25 +70,22 @@ class SiteExplorer:
                 )
                 for viewport in profile.viewports
             ]
-            primary = contexts[0]
+            primary, *others = contexts
             if prepare:
-                # Sites that allow one session per account sign out earlier logins,
-                # so sign in once and hand the session to the other viewports.
                 landing = await prepare(primary)
-                if landing:
-                    cookies = _settable(await primary.context.cookies())
-                    for context in contexts[1:]:
-                        await context.context.add_cookies(cookies)
-                    if follow_links:
-                        frontier.add_links(profile.start_url, [landing], depth=0)
+                if follow_links and landing:
+                    frontier.add_links(profile.start_url, [landing], depth=0)
+            # Signing in again elsewhere ends the session on sites that keep one session
+            # per account or tie it to the browser, so signed-in runs take one viewport
+            # at a time and replay the same pages in the others.
+            crawling = [primary] if prepare else contexts
+            visited: list[str] = []
             sitemap_checked = not follow_links
 
             while (item := frontier.pop()) is not None:
-                captures = await self._capture_everywhere(contexts, item.url, run_id, result)
-                for capture in captures:
-                    result.pages.append(capture)
-                    if on_page:
-                        await on_page(capture)
+                visited.append(item.url)
+                captures = await self._capture_everywhere(crawling, item.url, run_id, result)
+                await self._keep(captures, result, on_page)
                 if not captures or not follow_links:
                     continue
 
@@ -102,7 +98,22 @@ class SiteExplorer:
                     frontier.add_links(lead.final_url, pages, depth=0)
                 frontier.add_links(item.url, lead.links, depth=item.depth)
 
+            if prepare:
+                for context in others:
+                    await prepare(context)
+                    for url in visited:
+                        captures = await self._capture_everywhere([context], url, run_id, result)
+                        await self._keep(captures, result, on_page)
+
         return result
+
+    async def _keep(
+        self, captures: list[PageCapture], result: Exploration, on_page: PageCallback | None
+    ) -> None:
+        for capture in captures:
+            result.pages.append(capture)
+            if on_page:
+                await on_page(capture)
 
     async def _capture_everywhere(
         self,
@@ -174,19 +185,3 @@ def _slug(url: str) -> str:
     readable = re.sub(r"[^a-zA-Z0-9]+", "-", path)[:48].strip("-")
     digest = hashlib.sha1(url.encode()).hexdigest()[:8]
     return f"{readable}-{digest}"
-
-
-def _settable(cookies: list[Cookie]) -> list[SetCookieParam]:
-    return [
-        SetCookieParam(
-            name=c["name"],
-            value=c["value"],
-            domain=c["domain"],
-            path=c["path"],
-            expires=c["expires"],
-            httpOnly=c["httpOnly"],
-            secure=c["secure"],
-            sameSite=c["sameSite"],
-        )
-        for c in cookies
-    ]
