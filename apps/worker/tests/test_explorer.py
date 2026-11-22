@@ -1,4 +1,7 @@
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from pathlib import Path
+from typing import Any
 
 import pytest
 from playwright.async_api import Browser
@@ -6,6 +9,8 @@ from playwright.async_api import Browser
 from clarity_core.domain.profile import AnalysisProfile, CrawlLimits, ScopeMode
 from clarity_core.domain.viewport import Viewport
 from clarity_core.net.guard import AddressGuard
+from clarity_worker import explorer as explorer_module
+from clarity_worker.browser import GuardedContext, open_context
 from clarity_worker.explorer import SiteExplorer
 from clarity_worker.store import LocalArtifactStore
 
@@ -78,3 +83,39 @@ async def test_progress_callback_sees_each_capture(explorer: SiteExplorer, bugfa
     )
     await explorer.explore(profile, run_id="r5", on_page=on_page)
     assert seen == [f"{bugfarm}/about.html"]
+
+
+async def test_signs_in_once_and_shares_the_session(
+    explorer: SiteExplorer, bugfarm: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    opened: list[GuardedContext] = []
+
+    @asynccontextmanager
+    async def recording(*args: Any) -> AsyncIterator[GuardedContext]:
+        async with open_context(*args) as context:
+            opened.append(context)
+            yield context
+
+    monkeypatch.setattr(explorer_module, "open_context", recording)
+    prepared: list[GuardedContext] = []
+
+    async def prepare(context: GuardedContext) -> str:
+        prepared.append(context)
+        await context.context.add_cookies([{"name": "session", "value": "s1", "url": bugfarm}])
+        return f"{bugfarm}/about.html"
+
+    sessions: list[list[str]] = []
+
+    async def on_page(capture: object) -> None:
+        sessions.append([c["value"] for ctx in opened for c in await ctx.context.cookies()])
+
+    profile = AnalysisProfile(
+        start_url=f"{bugfarm}/about.html",
+        scope=ScopeMode.SINGLE,
+        viewports=[Viewport.DESKTOP, Viewport.MOBILE],
+    )
+    await explorer.explore(profile, run_id="r6", on_page=on_page, prepare=prepare)
+
+    assert prepared == opened[:1]
+    assert sessions
+    assert all(values.count("s1") == 2 for values in sessions)
