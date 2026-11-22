@@ -5,7 +5,8 @@ from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
 from urllib.parse import urljoin, urlsplit
 
-from playwright.async_api import APIRequestContext, Browser
+from playwright._impl._api_structures import SetCookieParam
+from playwright.async_api import APIRequestContext, Browser, Cookie
 from playwright.async_api import Error as PlaywrightError
 
 from clarity_core.domain.capture import PageCapture
@@ -72,9 +73,15 @@ class SiteExplorer:
             ]
             primary = contexts[0]
             if prepare:
-                landings = [await prepare(context) for context in contexts]
-                if follow_links and landings[0]:
-                    frontier.add_links(profile.start_url, [landings[0]], depth=0)
+                # Sites that allow one session per account sign out earlier logins,
+                # so sign in once and hand the session to the other viewports.
+                landing = await prepare(primary)
+                if landing:
+                    cookies = _settable(await primary.context.cookies())
+                    for context in contexts[1:]:
+                        await context.context.add_cookies(cookies)
+                    if follow_links:
+                        frontier.add_links(profile.start_url, [landing], depth=0)
             sitemap_checked = not follow_links
 
             while (item := frontier.pop()) is not None:
@@ -167,3 +174,19 @@ def _slug(url: str) -> str:
     readable = re.sub(r"[^a-zA-Z0-9]+", "-", path)[:48].strip("-")
     digest = hashlib.sha1(url.encode()).hexdigest()[:8]
     return f"{readable}-{digest}"
+
+
+def _settable(cookies: list[Cookie]) -> list[SetCookieParam]:
+    return [
+        SetCookieParam(
+            name=c["name"],
+            value=c["value"],
+            domain=c["domain"],
+            path=c["path"],
+            expires=c["expires"],
+            httpOnly=c["httpOnly"],
+            secure=c["secure"],
+            sameSite=c["sameSite"],
+        )
+        for c in cookies
+    ]
