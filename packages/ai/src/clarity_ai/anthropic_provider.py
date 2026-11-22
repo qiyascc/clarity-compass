@@ -3,7 +3,7 @@ from typing import Any
 
 import anthropic
 from anthropic.types.beta import BetaImageBlockParam, BetaMessageParam, BetaTextBlockParam
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from clarity_ai.provider import Generated, Image, Prompt, ProviderError, RefusalError, Text, Usage
 
@@ -57,6 +57,9 @@ class AnthropicProvider:
             ) from exc
         except anthropic.APIConnectionError as exc:
             raise ProviderError("Claude is unreachable") from exc
+        except ValidationError as exc:
+            # The SDK parses eagerly, so output cut off at max_tokens fails here.
+            raise ProviderError("incomplete structured output (unparseable JSON)") from exc
 
         if response.stop_reason == "refusal":
             category = getattr(response.stop_details, "category", None)
