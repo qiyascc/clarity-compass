@@ -17,6 +17,7 @@ class WorkerSettings(BaseSettings):
     model_dir: Path = Path("models")
     egress_proxy: str | None = None
     allowed_networks: list[str] = Field(default_factory=list)
+    headless: bool = False
     concurrency: int = Field(default=1, ge=1, le=8)
     ai_provider: Literal["anthropic", "openai", "none"] = "none"
     ai_model: str | None = None

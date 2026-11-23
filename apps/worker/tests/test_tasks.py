@@ -50,6 +50,7 @@ async def test_deferred_run_is_processed_by_the_worker(
         database_url=database_url,
         artifact_dir=tmp_path,
         allowed_networks=["127.0.0.0/8"],
+        headless=True,
         _env_file=None,
     )
     jobs = build_jobs(settings)

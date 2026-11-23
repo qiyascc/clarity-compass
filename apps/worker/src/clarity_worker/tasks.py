@@ -19,6 +19,7 @@ from clarity_persistence.models import FindingRecord, Run, Site
 from clarity_persistence.repositories import SimulationRepository
 from clarity_persistence.secrets import SecretBox, SiteLogin
 from clarity_saliency.predictor import AttentionPredictor
+from clarity_worker.browser import launch_browser
 from clarity_worker.predict import PagePredictor
 from clarity_worker.review import PageReviewer
 from clarity_worker.runner import AnalysisRunner
@@ -82,7 +83,9 @@ async def simulate(settings: WorkerSettings, simulation_id: uuid.UUID) -> None:
             )
 
         async with async_playwright() as playwright:
-            browser = await playwright.chromium.launch(proxy=_proxy(settings))
+            browser = await launch_browser(
+                playwright, headless=settings.headless, proxy=_proxy(settings)
+            )
             try:
                 simulator = FixSimulator(
                     browser,
@@ -132,7 +135,7 @@ async def execute(settings: WorkerSettings, run_id: uuid.UUID) -> None:
     proxy = _proxy(settings)
     try:
         async with async_playwright() as playwright:
-            browser = await playwright.chromium.launch(proxy=proxy)
+            browser = await launch_browser(playwright, headless=settings.headless, proxy=proxy)
             try:
                 store = LocalArtifactStore(settings.artifact_dir)
                 attention = attention_predictor(settings.model_dir.resolve())
