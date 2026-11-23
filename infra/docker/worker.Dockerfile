@@ -32,5 +32,7 @@ COPY --from=bundles /src/packages/probe/dist /app/bundles
 
 ENV PATH="/app/.venv/bin:$PATH" CLARITY_BUNDLE_DIR=/app/bundles CLARITY_MODEL_DIR=/app/models
 RUN mkdir -p /data/artifacts && chown pwuser /data/artifacts
+COPY --chmod=755 infra/docker/worker-entrypoint.sh /usr/local/bin/worker-entrypoint
 USER pwuser
+ENTRYPOINT ["worker-entrypoint"]
 CMD ["python", "-m", "clarity_worker"]

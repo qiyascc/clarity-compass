@@ -15,6 +15,10 @@ sites only through Smokescreen, which refuses loopback, private, link-local and
 other non-public destinations after DNS resolution, so redirects and
 subresources cannot be used to reach the host or the internal network.
 
+Chromium runs headed on an Xvfb display inside the worker container, because
+some sites answer headless browsers with 403 or a challenge page. Set
+`CLARITY_HEADLESS=true` to run it headless where no display is available.
+
 ## Configure
 
 ```sh
