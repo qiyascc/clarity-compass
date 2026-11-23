@@ -64,6 +64,7 @@ services:
     volumes:
       - artifacts:/data/artifacts
     networks: [internal]
+    init: true
     shm_size: 1gb
     depends_on:
       migrate: { condition: service_completed_successfully }
